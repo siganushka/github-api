@@ -1,0 +1,37 @@
+{
+    "name": "siganushka/github-api",
+    "description": "Github API.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "siganushka",
+            "email": "siganushka@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "siganushka/api-client": "@dev"
+    },
+    "require-dev": {
+        "symfony/phpunit-bridge": "^5.4|^6.0",
+        "symfony/error-handler": "^5.4|^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Siganushka\\ApiClient\\Github\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Siganushka\\ApiClient\\Github\\Tests\\": "tests/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../api-client"
+        }
+    ],
+    "minimum-stability": "dev"
+}
