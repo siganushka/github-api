@@ -47,7 +47,7 @@ class Authorize implements ConfigurableOptionsInterface
         header(sprintf('Location: %s', $authorizeUrl));
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
+    protected function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('client_id', $this->configuration['client_id']);
         $resolver->setDefined(['redirect_uri', 'login', 'scope', 'state', 'allow_signup']);
