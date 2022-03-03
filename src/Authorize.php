@@ -28,9 +28,9 @@ class Authorize implements ConfigurableOptionsInterface
     public function getAuthorizeUrl(array $options = []): string
     {
         $resolved = $this->resolveOptions($options);
-        $queryString = http_build_query($resolved);
+        $resolved['client_id'] = $this->configuration['client_id'];
 
-        return static::URL.'?'.$queryString;
+        return static::URL.'?'.http_build_query($resolved);
     }
 
     /**
@@ -49,10 +49,8 @@ class Authorize implements ConfigurableOptionsInterface
 
     protected function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefault('client_id', $this->configuration['client_id']);
         $resolver->setDefined(['redirect_uri', 'login', 'scope', 'state', 'allow_signup']);
 
-        $resolver->setAllowedTypes('client_id', 'string');
         $resolver->setAllowedTypes('redirect_uri', 'string');
         $resolver->setAllowedTypes('login', 'string');
         $resolver->setAllowedTypes('scope', 'string');
