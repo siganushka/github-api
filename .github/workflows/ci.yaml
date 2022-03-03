@@ -25,5 +25,3 @@ jobs:
             - { name: Install PHPStan,      run: composer require --dev phpstan/phpstan }
             - { name: PHPStan Version,      run: php vendor/bin/phpstan --version }
             - { name: Run PHPStan,          run: php vendor/bin/phpstan analyse }
-            - { name: Run PHPStan,          run: php vendor/bin/phpstan analyse --level=9 src/ }
-            - { name: Run PHPStan,          run: php vendor/bin/phpstan analyse --level=9 tests/ }
