@@ -7,6 +7,7 @@ use Siganushka\ApiClient\Github\Request\AccessTokenRequest;
 use Siganushka\ApiClient\Github\Request\UserRequest;
 use Siganushka\ApiClient\RequestClient;
 use Siganushka\ApiClient\RequestRegistry;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\HttpClient\HttpClient;
 
@@ -29,6 +30,9 @@ if (!function_exists('dd')) {
 $httpClient = HttpClient::create();
 // dd($httpClient);
 
+$cachePool = new FilesystemAdapter();
+// dd($cachePool);
+
 $configuration = new Configuration([
     'client_id' => CLIENT_ID,
     'client_secret' => CLIENT_SECRET,
@@ -43,5 +47,5 @@ $requests = [
 $registry = new RequestRegistry($requests);
 // dd($registry);
 
-$client = new RequestClient($httpClient, $registry);
+$client = new RequestClient($httpClient, $cachePool, $registry);
 // dd($client);
