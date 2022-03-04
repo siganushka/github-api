@@ -11,4 +11,4 @@ $options = [
 ];
 
 $wrappedResponse = $client->send(UserRequest::class, $options);
-dd($wrappedResponse->getParsedBody());
+dd($wrappedResponse->getParsedResponse());

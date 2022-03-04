@@ -27,4 +27,4 @@ $options = [
 ];
 
 $wrappedResponse = $client->send(AccessTokenRequest::class, $options);
-dd($wrappedResponse->getParsedBody());
+dd($wrappedResponse->getParsedResponse());
