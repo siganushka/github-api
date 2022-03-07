@@ -65,18 +65,18 @@ class AccessTokenRequestTest extends TestCase
 
     public function testParseResponse(): void
     {
-        $options = [
+        $data = [
             'access_token' => 'foo',
             'token_type' => 'bar',
             'scope' => '',
         ];
 
         /** @var string */
-        $body = json_encode($options);
+        $body = json_encode($data);
         $response = ResponseFactory::createMockResponse($body);
 
         $request = static::createRequest();
-        static::assertSame($options, $request->parseResponse($response));
+        static::assertSame($data, $request->parseResponse($response));
     }
 
     public function testParseResponseException(): void
@@ -84,13 +84,13 @@ class AccessTokenRequestTest extends TestCase
         $this->expectException(ParseResponseException::class);
         $this->expectExceptionMessage('bar (foo)');
 
-        $options = [
+        $data = [
             'error' => 'foo',
             'error_description' => 'bar',
         ];
 
         /** @var string */
-        $body = json_encode($options);
+        $body = json_encode($data);
         $response = ResponseFactory::createMockResponse($body);
 
         $request = static::createRequest();
