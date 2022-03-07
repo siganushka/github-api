@@ -8,6 +8,9 @@ use Siganushka\ApiClient\AbstractRequest;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
+/**
+ * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#3-use-the-access-token-to-access-the-api
+ */
 class UserRequest extends AbstractRequest
 {
     public const URL = 'https://api.github.com/user';

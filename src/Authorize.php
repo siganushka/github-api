@@ -9,6 +9,11 @@ use Siganushka\ApiClient\ConfigurableOptionsTrait;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * github OAuth authorize class.
+ *
+ * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps
+ */
 class Authorize implements ConfigurableOptionsInterface
 {
     use ConfigurableOptionsTrait;
