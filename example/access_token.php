@@ -26,5 +26,5 @@ $options = [
     'code' => $_GET['code'],
 ];
 
-$wrappedResponse = $client->send(AccessTokenRequest::class, $options);
-dd($wrappedResponse->getParsedResponse());
+$result = $client->send(AccessTokenRequest::class, $options);
+dd($result);
