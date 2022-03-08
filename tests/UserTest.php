@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github\Tests\Request;
+namespace Siganushka\ApiClient\Github\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Siganushka\ApiClient\Github\Request\UserRequest;
+use Siganushka\ApiClient\Github\User;
 use Siganushka\ApiClient\Response\ResponseFactory;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
-class UserRequestTest extends TestCase
+class UserTest extends TestCase
 {
     public function testAll(): void
     {
@@ -20,7 +20,7 @@ class UserRequestTest extends TestCase
 
         $request->build(['access_token' => 'foo']);
         static::assertSame('GET', $request->getMethod());
-        static::assertSame(UserRequest::URL, $request->getUrl());
+        static::assertSame(User::URL, $request->getUrl());
 
         /**
          * @var array{
@@ -54,8 +54,8 @@ class UserRequestTest extends TestCase
         static::assertSame($options, $request->parseResponse($response));
     }
 
-    public static function createRequest(): UserRequest
+    public static function createRequest(): User
     {
-        return new UserRequest();
+        return new User();
     }
 }

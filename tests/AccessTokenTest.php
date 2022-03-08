@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github\Tests\Request;
+namespace Siganushka\ApiClient\Github\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\Exception\ParseResponseException;
-use Siganushka\ApiClient\Github\Request\AccessTokenRequest;
-use Siganushka\ApiClient\Github\Tests\ConfigurationTest;
+use Siganushka\ApiClient\Github\AccessToken;
 use Siganushka\ApiClient\Response\ResponseFactory;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
-class AccessTokenRequestTest extends TestCase
+class AccessTokenTest extends TestCase
 {
     public function testAll(): void
     {
@@ -22,7 +21,7 @@ class AccessTokenRequestTest extends TestCase
 
         $request->build(['code' => 'foo']);
         static::assertSame('POST', $request->getMethod());
-        static::assertSame(AccessTokenRequest::URL, $request->getUrl());
+        static::assertSame(AccessToken::URL, $request->getUrl());
 
         /**
          * @var array{
@@ -97,10 +96,10 @@ class AccessTokenRequestTest extends TestCase
         $request->parseResponse($response);
     }
 
-    public static function createRequest(): AccessTokenRequest
+    public static function createRequest(): AccessToken
     {
         $configuration = ConfigurationTest::createConfiguration();
-        $request = new AccessTokenRequest($configuration);
+        $request = new AccessToken($configuration);
 
         return $request;
     }

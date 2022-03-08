@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Siganushka\ApiClient\Github\Configuration;
-use Siganushka\ApiClient\Github\Request\AccessTokenRequest;
-use Siganushka\ApiClient\Github\Request\UserRequest;
+use Siganushka\ApiClient\Github\AccessToken;
+use Siganushka\ApiClient\Github\User;
 use Siganushka\ApiClient\RequestClient;
 use Siganushka\ApiClient\RequestRegistry;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -40,8 +40,8 @@ $configuration = new Configuration([
 // dd($configuration);
 
 $requests = [
-    new AccessTokenRequest($configuration),
-    new UserRequest($configuration),
+    new AccessToken($configuration),
+    new User($configuration),
 ];
 
 $registry = new RequestRegistry($requests);

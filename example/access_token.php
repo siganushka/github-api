@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Siganushka\ApiClient\Github\Authorize;
-use Siganushka\ApiClient\Github\Request\AccessTokenRequest;
+use Siganushka\ApiClient\Github\AccessToken;
 
 require __DIR__.'/_autoload.php';
 
@@ -26,5 +26,5 @@ $options = [
     'code' => $_GET['code'],
 ];
 
-$result = $client->send(AccessTokenRequest::class, $options);
+$result = $client->send(AccessToken::class, $options);
 dd($result);

@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github\Request;
+namespace Siganushka\ApiClient\Github;
 
 use Siganushka\ApiClient\AbstractRequest;
 use Siganushka\ApiClient\Exception\ParseResponseException;
-use Siganushka\ApiClient\Github\Configuration;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
  */
-class AccessTokenRequest extends AbstractRequest
+class AccessToken extends AbstractRequest
 {
     public const URL = 'https://github.com/login/oauth/access_token';
 
