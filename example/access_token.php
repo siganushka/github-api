@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 use Siganushka\ApiClient\Github\Authorize;
 use Siganushka\ApiClient\Github\AccessToken;
+use Siganushka\ApiClient\Wechat\GenericUtils;
 
 require __DIR__.'/_autoload.php';
 
 if (!isset($_GET['code'])) {
-    $currentUrl = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://').
-        ($_SERVER['HTTP_HOST'] ?? 'localhost').
-        ($_SERVER['REQUEST_URI'] ?? '');
-
-    $options = ['redirect_uri' => $currentUrl];
+    $options = [
+        'redirect_uri' => GenericUtils::getCurrentUrl(),
+    ];
 
     $authorize = new Authorize($configuration);
     $authorize->redirect($options);
-    // $authorizeUrl = $authorize->getAuthorizeUrl($options);
-    // dd($authorizeUrl);
+    // dd($authorize->getAuthorizeUrl($options));
 
     exit;
 }
@@ -26,5 +24,5 @@ $options = [
     'code' => $_GET['code'],
 ];
 
-$result = $client->send(AccessToken::class, $options);
-dd($result);
+$parsedResponse = $client->send(AccessToken::class, $options);
+dd($parsedResponse);

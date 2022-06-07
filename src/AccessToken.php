@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient\Github;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Siganushka\ApiClient\AbstractRequest;
 use Siganushka\ApiClient\Exception\ParseResponseException;
+use Siganushka\ApiClient\RequestOptions;
+use Siganushka\ApiClient\Response\ResponseFactory;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -16,14 +19,24 @@ class AccessToken extends AbstractRequest
 {
     public const URL = 'https://github.com/login/oauth/access_token';
 
-    protected Configuration $configuration;
+    private CacheItemPoolInterface $cachePool;
+    private Configuration $configuration;
 
-    public function __construct(Configuration $configuration)
+    public function __construct(CacheItemPoolInterface $cachePool, Configuration $configuration)
     {
+        $this->cachePool = $cachePool;
         $this->configuration = $configuration;
     }
 
-    protected function configureRequest(array $options): void
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setRequired('code');
+        $resolver->setAllowedTypes('code', 'string');
+
+        $resolver->setDefault('redirect_uri', null);
+    }
+
+    protected function configureRequest(RequestOptions $request, array $options): void
     {
         $headers = [
             'Accept' => 'application/json',
@@ -39,7 +52,7 @@ class AccessToken extends AbstractRequest
             $body['redirect_uri'] = $options['redirect_uri'];
         }
 
-        $this
+        $request
             ->setMethod('POST')
             ->setUrl(static::URL)
             ->setHeaders($headers)
@@ -47,12 +60,26 @@ class AccessToken extends AbstractRequest
         ;
     }
 
-    protected function configureOptions(OptionsResolver $resolver): void
+    protected function sendRequest(RequestOptions $request): ResponseInterface
     {
-        $resolver->setRequired('code');
-        $resolver->setAllowedTypes('code', 'string');
+        $key = sprintf('%s_%s', __CLASS__, md5(serialize($request->toArray())));
 
-        $resolver->setDefault('redirect_uri', null);
+        $cacheItem = $this->cachePool->getItem($key);
+        if ($cacheItem->isHit()) {
+            /** @var array{ access_token: string, token_type: string, scope: string } */
+            $cacheData = $cacheItem->get();
+
+            return ResponseFactory::createMockResponseWithJson($cacheData);
+        }
+
+        $response = parent::sendRequest($request);
+        $parsedResponse = $this->parseResponse($response);
+
+        $cacheItem->set($parsedResponse);
+        $cacheItem->expiresAfter(600);
+        $this->cachePool->save($cacheItem);
+
+        return $response;
     }
 
     /**

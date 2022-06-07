@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siganushka\ApiClient\Github;
 
 use Siganushka\ApiClient\AbstractRequest;
+use Siganushka\ApiClient\RequestOptions;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -15,26 +16,26 @@ class User extends AbstractRequest
 {
     public const URL = 'https://api.github.com/user';
 
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setRequired('access_token');
+        $resolver->setAllowedTypes('access_token', 'string');
+    }
+
     /**
      * @param array{ access_token: string } $options
      */
-    protected function configureRequest(array $options): void
+    protected function configureRequest(RequestOptions $request, array $options): void
     {
         $headers = [
             'Authorization' => sprintf('token %s', $options['access_token']),
         ];
 
-        $this
+        $request
             ->setMethod('GET')
             ->setUrl(static::URL)
             ->setHeaders($headers)
         ;
-    }
-
-    protected function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setRequired('access_token');
-        $resolver->setAllowedTypes('access_token', 'string');
     }
 
     /**

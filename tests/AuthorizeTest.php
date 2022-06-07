@@ -22,8 +22,8 @@ class AuthorizeTest extends TestCase
         ];
 
         $authorize = static::createAuthorize();
-        static::assertSame([], $authorize->resolveOptions([]));
-        static::assertSame($options, $authorize->resolveOptions($options));
+        static::assertSame([], $authorize->resolve([]));
+        static::assertSame($options, $authorize->resolve($options));
     }
 
     public function testInvalidOptionsException(): void
@@ -32,7 +32,7 @@ class AuthorizeTest extends TestCase
         $this->expectExceptionMessage('The option "allow_signup" with value false is invalid. Accepted values are: "true", "false"');
 
         $authorize = static::createAuthorize();
-        $authorize->resolveOptions(['allow_signup' => false]);
+        $authorize->resolve(['allow_signup' => false]);
     }
 
     public function testUndefinedOptionsException(): void
@@ -41,7 +41,7 @@ class AuthorizeTest extends TestCase
         $this->expectExceptionMessage('The option "baz" does not exist. Defined options are: "allow_signup", "login", "redirect_uri", "scope", "state"');
 
         $authorize = static::createAuthorize();
-        $authorize->resolveOptions(['baz' => 'test']);
+        $authorize->resolve(['baz' => 'test']);
     }
 
     public static function createAuthorize(): Authorize

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Siganushka\ApiClient\Github\Configuration;
 use Siganushka\ApiClient\Github\AccessToken;
+use Siganushka\ApiClient\Github\Configuration;
 use Siganushka\ApiClient\Github\User;
 use Siganushka\ApiClient\RequestClient;
 use Siganushka\ApiClient\RequestRegistry;
@@ -28,24 +28,17 @@ if (!function_exists('dd')) {
 }
 
 $httpClient = HttpClient::create();
-// dd($httpClient);
-
 $cachePool = new FilesystemAdapter();
-// dd($cachePool);
 
 $configuration = new Configuration([
     'client_id' => CLIENT_ID,
     'client_secret' => CLIENT_SECRET,
 ]);
-// dd($configuration);
 
 $requests = [
-    new AccessToken($configuration),
-    new User($configuration),
+    new AccessToken($cachePool, $configuration),
+    new User(),
 ];
 
 $registry = new RequestRegistry($requests);
-// dd($registry);
-
-$client = new RequestClient($httpClient, $cachePool, $registry);
-// dd($client);
+$client = new RequestClient($httpClient, $registry);

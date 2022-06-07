@@ -6,29 +6,57 @@ namespace Siganushka\ApiClient\Github\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\Github\User;
+use Siganushka\ApiClient\RequestOptions;
 use Siganushka\ApiClient\Response\ResponseFactory;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class UserTest extends TestCase
 {
-    public function testAll(): void
+    public function testResolve(): void
     {
         $request = static::createRequest();
-        static::assertNull($request->getMethod());
-        static::assertNull($request->getUrl());
-        static::assertSame([], $request->getOptions());
 
-        $request->build(['access_token' => 'foo']);
-        static::assertSame('GET', $request->getMethod());
-        static::assertSame(User::URL, $request->getUrl());
+        $resolved = $request->resolve(['access_token' => 'foo']);
+        static::assertSame('foo', $resolved['access_token']);
+        static::assertSame(['access_token'], $request->getResolver()->getDefinedOptions());
+    }
 
-        /**
-         * @var array{
-         *  headers: array{ Authorization: string }
-         * }
-         */
-        $options = $request->getOptions();
-        static::assertSame('token foo', $options['headers']['Authorization']);
+    public function testSend(): void
+    {
+        $data = [
+            'id' => 65535,
+        ];
+
+        $response = ResponseFactory::createMockResponseWithJson($data);
+
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->method('request')->willReturn($response);
+
+        $request = static::createRequest();
+        $request->setHttpClient($httpClient);
+
+        $parsedResponse = $request->send(['access_token' => 'foo']);
+        static::assertSame($data, $parsedResponse);
+    }
+
+    public function testConfigureRequest(): void
+    {
+        $request = static::createRequest();
+        $requestOptions = new RequestOptions();
+
+        $configureRequestRef = new \ReflectionMethod($request, 'configureRequest');
+        $configureRequestRef->setAccessible(true);
+        $configureRequestRef->invoke($request, $requestOptions, $request->resolve(['access_token' => 'foo']));
+
+        static::assertSame('GET', $requestOptions->getMethod());
+        static::assertSame(User::URL, $requestOptions->getUrl());
+        static::assertSame([
+            'headers' => [
+                'Authorization' => 'token foo',
+            ],
+        ], $requestOptions->toArray());
     }
 
     public function testAccessTokenMissingOptionsException(): void
@@ -37,21 +65,16 @@ class UserTest extends TestCase
         $this->expectExceptionMessage('The required option "access_token" is missing');
 
         $request = static::createRequest();
-        $request->build();
+        $request->resolve();
     }
 
-    public function testParseResponse(): void
+    public function testAccessTokenInvalidOptionsException(): void
     {
-        $options = [
-            'login' => 'foo',
-        ];
-
-        /** @var string */
-        $body = json_encode($options);
-        $response = ResponseFactory::createMockResponse($body);
+        $this->expectException(InvalidOptionsException::class);
+        $this->expectExceptionMessage('The option "access_token" with value 123 is expected to be of type "string", but is of type "int"');
 
         $request = static::createRequest();
-        static::assertSame($options, $request->parseResponse($response));
+        $request->resolve(['access_token' => 123]);
     }
 
     public static function createRequest(): User

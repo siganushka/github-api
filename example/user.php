@@ -6,9 +6,10 @@ use Siganushka\ApiClient\Github\User;
 
 require __DIR__.'/_autoload.php';
 
+// OAuth 授权通过 code 换取到的 access_token，每个 code 只能使用一次
 $options = [
-    'access_token' => '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',
+    'access_token' => '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',
 ];
 
-$result = $client->send(User::class, $options);
-dd($result);
+$parsedResponse = $client->send(User::class, $options);
+dd($parsedResponse);

@@ -11,7 +11,8 @@
     ],
     "require": {
         "php": ">=7.4",
-        "siganushka/api-client": "dev-main"
+        "siganushka/api-client": "dev-main",
+        "symfony/cache": "^5.4|^6.0"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^5.4|^6.0",
@@ -27,5 +28,10 @@
             "Siganushka\\ApiClient\\Github\\Tests\\": "tests/"
         }
     },
-    "minimum-stability": "dev"
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../api-client"
+        }
+    ]
 }
