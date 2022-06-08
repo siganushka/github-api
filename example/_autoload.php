@@ -40,5 +40,5 @@ $requests = [
     new User(),
 ];
 
-$registry = new RequestRegistry($requests);
-$client = new RequestClient($httpClient, $registry);
+$registry = new RequestRegistry($httpClient, $requests);
+$client = new RequestClient($registry);
