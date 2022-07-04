@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Siganushka\ApiClient\Github\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Siganushka\ApiClient\Github\Authorize;
+use Siganushka\ApiClient\Github\Client;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 
-class AuthorizeTest extends TestCase
+class ClientTest extends TestCase
 {
     public function testAll(): void
     {
@@ -21,7 +21,7 @@ class AuthorizeTest extends TestCase
             'allow_signup' => 'true',
         ];
 
-        $authorize = static::createAuthorize();
+        $authorize = static::createRequest();
         static::assertSame([], $authorize->resolve([]));
         static::assertSame($options, $authorize->resolve($options));
     }
@@ -31,7 +31,7 @@ class AuthorizeTest extends TestCase
         $this->expectException(InvalidOptionsException::class);
         $this->expectExceptionMessage('The option "allow_signup" with value false is invalid. Accepted values are: "true", "false"');
 
-        $authorize = static::createAuthorize();
+        $authorize = static::createRequest();
         $authorize->resolve(['allow_signup' => false]);
     }
 
@@ -40,15 +40,15 @@ class AuthorizeTest extends TestCase
         $this->expectException(UndefinedOptionsException::class);
         $this->expectExceptionMessage('The option "baz" does not exist. Defined options are: "allow_signup", "login", "redirect_uri", "scope", "state"');
 
-        $authorize = static::createAuthorize();
+        $authorize = static::createRequest();
         $authorize->resolve(['baz' => 'test']);
     }
 
-    public static function createAuthorize(): Authorize
+    public static function createRequest(): Client
     {
         $configuration = ConfigurationTest::createConfiguration();
-        $authorize = new Authorize($configuration);
+        $client = new Client($configuration);
 
-        return $authorize;
+        return $client;
     }
 }

@@ -10,11 +10,11 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Gitub OAuth authorize class.
+ * Gitub OAuth client class.
  *
  * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps
  */
-class Authorize implements ConfigurableOptionsInterface
+class Client implements ConfigurableOptionsInterface
 {
     use ConfigurableOptionsTrait;
 
@@ -30,7 +30,7 @@ class Authorize implements ConfigurableOptionsInterface
     /**
      * @param array<string, string> $options
      */
-    public function getAuthorizeUrl(array $options = []): string
+    public function getRedirectUrl(array $options = []): string
     {
         $resolved = $this->resolve($options);
         $resolved['client_id'] = $this->configuration['client_id'];
@@ -43,13 +43,13 @@ class Authorize implements ConfigurableOptionsInterface
      */
     public function redirect(array $options = []): void
     {
-        $authorizeUrl = $this->getAuthorizeUrl($options);
+        $redirectUrl = $this->getRedirectUrl($options);
         if (class_exists(RedirectResponse::class)) {
-            $response = new RedirectResponse($authorizeUrl);
+            $response = new RedirectResponse($redirectUrl);
             $response->send();
         }
 
-        header(sprintf('Location: %s', $authorizeUrl));
+        header(sprintf('Location: %s', $redirectUrl));
     }
 
     public function configureOptions(OptionsResolver $resolver): void
