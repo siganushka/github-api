@@ -7,12 +7,11 @@ namespace Siganushka\ApiClient\Github\Tests;
 use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\Github\AccessToken;
-use Siganushka\ApiClient\RequestOptions;
 use Siganushka\ApiClient\Response\ResponseFactory;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class AccessTokenTest extends TestCase
 {
@@ -23,37 +22,12 @@ class AccessTokenTest extends TestCase
         $resolved = $request->resolve(['code' => 'foo']);
         static::assertSame('foo', $resolved['code']);
         static::assertNull($resolved['redirect_uri']);
-        static::assertSame(['code', 'redirect_uri'], $request->getResolver()->getDefinedOptions());
     }
 
-    public function testSend(): void
-    {
-        $data = [
-            'access_token' => 'foo',
-            'scope' => 12,
-            'token_type' => 'bar',
-        ];
-
-        $response = ResponseFactory::createMockResponseWithJson($data);
-
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->method('request')->willReturn($response);
-
-        $request = static::createRequest();
-        $request->setHttpClient($httpClient);
-
-        $parsedResponse = $request->send(['code' => 'foo']);
-        static::assertSame($data, $parsedResponse);
-    }
-
-    public function testConfigureRequest(): void
+    public function testBuild(): void
     {
         $request = static::createRequest();
-        $requestOptions = new RequestOptions();
-
-        $configureRequestRef = new \ReflectionMethod($request, 'configureRequest');
-        $configureRequestRef->setAccessible(true);
-        $configureRequestRef->invoke($request, $requestOptions, $request->resolve(['code' => 'foo']));
+        $requestOptions = $request->build(['code' => 'foo']);
 
         static::assertSame('POST', $requestOptions->getMethod());
         static::assertSame(AccessToken::URL, $requestOptions->getUrl());
@@ -68,7 +42,7 @@ class AccessTokenTest extends TestCase
             ],
         ], $requestOptions->toArray());
 
-        $configureRequestRef->invoke($request, $requestOptions, $request->resolve(['code' => 'foo', 'redirect_uri' => '/foo']));
+        $requestOptions = $request->build(['code' => 'foo', 'redirect_uri' => '/foo']);
         static::assertSame([
             'headers' => [
                 'Accept' => 'application/json',
@@ -80,6 +54,24 @@ class AccessTokenTest extends TestCase
                 'redirect_uri' => '/foo',
             ],
         ], $requestOptions->toArray());
+    }
+
+    public function testSend(): void
+    {
+        $data = [
+            'access_token' => 'foo',
+            'scope' => 12,
+            'token_type' => 'bar',
+        ];
+
+        $response = ResponseFactory::createMockResponseWithJson($data);
+        $client = new MockHttpClient($response);
+
+        $request = static::createRequest();
+        $request->setHttpClient($client);
+
+        $result = $request->send(['code' => 'foo']);
+        static::assertSame($data, $result);
     }
 
     public function testParseResponseException(): void

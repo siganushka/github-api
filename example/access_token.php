@@ -18,8 +18,7 @@ if (!isset($_GET['code'])) {
 
     $client = new Client($configuration);
     $client->redirect($options);
-    // dd($authorize->getRedirectUrl($options));
-
+    // dd($client->getRedirectUrl($options));
     exit;
 }
 
@@ -27,5 +26,8 @@ $options = [
     'code' => $_GET['code'],
 ];
 
-$parsedResponse = $client->send(AccessToken::class, $options);
-dd($parsedResponse);
+$request = new AccessToken($cachePool, $configuration);
+$request->setHttpClient($httpClient);
+
+$result = $request->send($options);
+dd($result);

@@ -28,7 +28,7 @@ class AccessToken extends AbstractRequest
         $this->configuration = $configuration;
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
+    protected function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired('code');
         $resolver->setAllowedTypes('code', 'string');
@@ -66,10 +66,7 @@ class AccessToken extends AbstractRequest
 
         $cacheItem = $this->cachePool->getItem($key);
         if ($cacheItem->isHit()) {
-            /** @var array{ access_token: string, token_type: string, scope: string } */
-            $cacheData = $cacheItem->get();
-
-            return ResponseFactory::createMockResponseWithJson($cacheData);
+            return ResponseFactory::createMockResponseWithJson($cacheItem->get());
         }
 
         $response = parent::sendRequest($request);
@@ -82,20 +79,8 @@ class AccessToken extends AbstractRequest
         return $response;
     }
 
-    /**
-     * @return array{ access_token: string, token_type: string, scope: string }
-     */
-    public function parseResponse(ResponseInterface $response): array
+    protected function parseResponse(ResponseInterface $response): array
     {
-        /**
-         * @var array{
-         *  access_token?: string,
-         *  token_type: string,
-         *  scope: string,
-         *  error?: string,
-         *  error_description?: string
-         * }
-         */
         $result = $response->toArray();
         if (isset($result['access_token'])) {
             return $result;

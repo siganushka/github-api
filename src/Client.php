@@ -52,7 +52,7 @@ class Client implements ConfigurableOptionsInterface
         header(sprintf('Location: %s', $redirectUrl));
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
+    protected function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefined(['redirect_uri', 'login', 'scope', 'state', 'allow_signup']);
 

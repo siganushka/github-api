@@ -16,15 +16,12 @@ class User extends AbstractRequest
 {
     public const URL = 'https://api.github.com/user';
 
-    public function configureOptions(OptionsResolver $resolver): void
+    protected function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired('access_token');
         $resolver->setAllowedTypes('access_token', 'string');
     }
 
-    /**
-     * @param array{ access_token: string } $options
-     */
     protected function configureRequest(RequestOptions $request, array $options): void
     {
         $headers = [
@@ -38,10 +35,7 @@ class User extends AbstractRequest
         ;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function parseResponse(ResponseInterface $response): array
+    protected function parseResponse(ResponseInterface $response): array
     {
         return $response->toArray();
     }

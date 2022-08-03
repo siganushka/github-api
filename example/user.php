@@ -8,8 +8,11 @@ require __DIR__.'/_autoload.php';
 
 // OAuth 授权通过 code 换取到的 access_token，每个 code 只能使用一次
 $options = [
-    'access_token' => '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',
+    'access_token' => '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',
 ];
 
-$parsedResponse = $client->send(User::class, $options);
-dd($parsedResponse);
+$request = new User();
+$request->setHttpClient($httpClient);
+
+$result = $request->send($options);
+dd($result);
