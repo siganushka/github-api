@@ -28,11 +28,5 @@
         "psr-4": {
             "Siganushka\\ApiClient\\Github\\Tests\\": "tests/"
         }
-    },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../api-client"
-        }
-    ]
+    }
 }
