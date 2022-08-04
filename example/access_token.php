@@ -18,7 +18,6 @@ if (!isset($_GET['code'])) {
 
     $client = new Client($configuration);
     $client->redirect($options);
-    // dd($client->getRedirectUrl($options));
     exit;
 }
 

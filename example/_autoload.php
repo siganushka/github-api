@@ -23,10 +23,10 @@ if (!function_exists('dd')) {
     }
 }
 
+$httpClient = HttpClient::create();
+$cachePool = new FilesystemAdapter();
+
 $configuration = new Configuration([
     'client_id' => CLIENT_ID,
     'client_secret' => CLIENT_SECRET,
 ]);
-
-$httpClient = HttpClient::create();
-$cachePool = new FilesystemAdapter();
