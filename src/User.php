@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siganushka\ApiClient\Github;
 
 use Siganushka\ApiClient\AbstractRequest;
+use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\RequestOptions;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -18,8 +19,11 @@ class User extends AbstractRequest
 
     protected function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setRequired('access_token');
-        $resolver->setAllowedTypes('access_token', 'string');
+        $resolver
+            ->define('access_token')
+            ->required()
+            ->allowedTypes('string')
+        ;
     }
 
     protected function configureRequest(RequestOptions $request, array $options): void
@@ -37,6 +41,14 @@ class User extends AbstractRequest
 
     protected function parseResponse(ResponseInterface $response): array
     {
-        return $response->toArray();
+        $result = $response->toArray();
+        if (isset($result['id'])) {
+            return $result;
+        }
+
+        $error = (string) ($result['error'] ?? '0');
+        $errorDescription = (string) ($result['error_description'] ?? 'error');
+
+        throw new ParseResponseException($response, sprintf('%s (%s)', $errorDescription, $error));
     }
 }

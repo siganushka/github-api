@@ -6,49 +6,117 @@ namespace Siganushka\ApiClient\Github\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\Github\Client;
-use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
-use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
+use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ClientTest extends TestCase
 {
-    public function testAll(): void
+    private ?Client $client = null;
+
+    protected function setUp(): void
     {
-        $options = [
-            'redirect_uri' => 'http://localhost',
-            'login' => 'foo',
-            'scope' => 'bar',
-            'state' => 'baz',
+        $this->client = new Client();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->client = null;
+    }
+
+    public function testConfigure(): void
+    {
+        $resolver = new OptionsResolver();
+        $this->client->configure($resolver);
+
+        static::assertSame([
+            'client_id',
+            'client_secret',
+            'redirect_uri',
+            'login',
+            'scope',
+            'state',
+            'allow_signup',
+        ], $resolver->getDefinedOptions());
+
+        static::assertSame([
+            'redirect_uri' => null,
+            'login' => null,
+            'scope' => null,
+            'state' => null,
+            'allow_signup' => null,
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+        ], $resolver->resolve([
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+        ]));
+
+        static::assertSame([
+            'redirect_uri' => 'test_redirect_uri',
+            'login' => 'test_login',
+            'scope' => 'test_scope',
+            'state' => 'test_state',
             'allow_signup' => 'true',
-        ];
-
-        $authorize = static::createRequest();
-        static::assertSame([], $authorize->resolve([]));
-        static::assertSame($options, $authorize->resolve($options));
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+        ], $resolver->resolve([
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+            'redirect_uri' => 'test_redirect_uri',
+            'login' => 'test_login',
+            'scope' => 'test_scope',
+            'state' => 'test_state',
+            'allow_signup' => 'true',
+        ]));
     }
 
-    public function testInvalidOptionsException(): void
+    public function testGetRedirectUrl(): void
     {
-        $this->expectException(InvalidOptionsException::class);
-        $this->expectExceptionMessage('The option "allow_signup" with value false is invalid. Accepted values are: "true", "false"');
+        $redirectUrl = $this->client->getRedirectUrl([
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+        ]);
 
-        $authorize = static::createRequest();
-        $authorize->resolve(['allow_signup' => false]);
+        static::assertStringStartsWith(Client::URL, $redirectUrl);
+        static::assertStringContainsString('client_id=foo', $redirectUrl);
+        static::assertStringNotContainsString('redirect_uri=', $redirectUrl);
+        static::assertStringNotContainsString('login=', $redirectUrl);
+        static::assertStringNotContainsString('scope=', $redirectUrl);
+        static::assertStringNotContainsString('state=', $redirectUrl);
+        static::assertStringNotContainsString('allow_signup=', $redirectUrl);
+
+        $redirectUrl = $this->client->getRedirectUrl([
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+            'redirect_uri' => 'test_redirect_uri',
+            'login' => 'test_login',
+            'scope' => 'test_scope',
+            'state' => 'test_state',
+            'allow_signup' => 'true',
+        ]);
+
+        static::assertStringStartsWith(Client::URL, $redirectUrl);
+        static::assertStringContainsString('client_id=foo', $redirectUrl);
+        static::assertStringContainsString('redirect_uri=', $redirectUrl);
+        static::assertStringContainsString('login=', $redirectUrl);
+        static::assertStringContainsString('scope=', $redirectUrl);
+        static::assertStringContainsString('state=', $redirectUrl);
+        static::assertStringContainsString('allow_signup=', $redirectUrl);
     }
 
-    public function testUndefinedOptionsException(): void
+    public function testClientIdMissingOptionsException(): void
     {
-        $this->expectException(UndefinedOptionsException::class);
-        $this->expectExceptionMessage('The option "baz" does not exist. Defined options are: "allow_signup", "login", "redirect_uri", "scope", "state"');
+        $this->expectException(MissingOptionsException::class);
+        $this->expectExceptionMessage('The required option "client_id" is missing');
 
-        $authorize = static::createRequest();
-        $authorize->resolve(['baz' => 'test']);
+        $this->client->getRedirectUrl(['client_secret' => 'bar']);
     }
 
-    public static function createRequest(): Client
+    public function testClientSecretMissingOptionsException(): void
     {
-        $configuration = ConfigurationTest::createConfiguration();
-        $client = new Client($configuration);
+        $this->expectException(MissingOptionsException::class);
+        $this->expectExceptionMessage('The required option "client_secret" is missing');
 
-        return $client;
+        $this->client->getRedirectUrl(['client_id' => 'foo']);
     }
 }

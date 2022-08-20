@@ -9,7 +9,9 @@ use Siganushka\ApiClient\AbstractRequest;
 use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\RequestOptions;
 use Siganushka\ApiClient\Response\ResponseFactory;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
@@ -20,20 +22,28 @@ class AccessToken extends AbstractRequest
     public const URL = 'https://github.com/login/oauth/access_token';
 
     private CacheItemPoolInterface $cachePool;
-    private Configuration $configuration;
 
-    public function __construct(CacheItemPoolInterface $cachePool, Configuration $configuration)
+    public function __construct(CacheItemPoolInterface $cachePool = null)
     {
-        $this->cachePool = $cachePool;
-        $this->configuration = $configuration;
+        $this->cachePool = $cachePool ?? new FilesystemAdapter();
     }
 
     protected function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setRequired('code');
-        $resolver->setAllowedTypes('code', 'string');
+        OptionsUtils::client_id($resolver);
+        OptionsUtils::client_secret($resolver);
 
-        $resolver->setDefault('redirect_uri', null);
+        $resolver
+            ->define('code')
+            ->required()
+            ->allowedTypes('string')
+        ;
+
+        $resolver
+            ->define('redirect_uri')
+            ->default(null)
+            ->allowedTypes('null', 'string')
+        ;
     }
 
     protected function configureRequest(RequestOptions $request, array $options): void
@@ -42,15 +52,12 @@ class AccessToken extends AbstractRequest
             'Accept' => 'application/json',
         ];
 
-        $body = [
-            'client_id' => $this->configuration['client_id'],
-            'client_secret' => $this->configuration['client_secret'],
+        $body = array_filter([
+            'client_id' => $options['client_id'],
+            'client_secret' => $options['client_secret'],
             'code' => $options['code'],
-        ];
-
-        if ($options['redirect_uri']) {
-            $body['redirect_uri'] = $options['redirect_uri'];
-        }
+            'redirect_uri' => $options['redirect_uri'],
+        ], fn ($value) => null !== $value);
 
         $request
             ->setMethod('POST')
@@ -60,16 +67,14 @@ class AccessToken extends AbstractRequest
         ;
     }
 
-    protected function sendRequest(RequestOptions $request): ResponseInterface
+    protected function sendRequest(HttpClientInterface $client, RequestOptions $request): ResponseInterface
     {
-        $key = sprintf('%s_%s', __CLASS__, md5(serialize($request->toArray())));
-
-        $cacheItem = $this->cachePool->getItem($key);
+        $cacheItem = $this->cachePool->getItem((string) $request);
         if ($cacheItem->isHit()) {
             return ResponseFactory::createMockResponseWithJson($cacheItem->get());
         }
 
-        $response = parent::sendRequest($request);
+        $response = parent::sendRequest($client, $request);
         $parsedResponse = $this->parseResponse($response);
 
         $cacheItem->set($parsedResponse);
@@ -86,8 +91,8 @@ class AccessToken extends AbstractRequest
             return $result;
         }
 
-        $error = (string) ($result['error'] ?? '');
-        $errorDescription = (string) ($result['error_description'] ?? '');
+        $error = (string) ($result['error'] ?? '0');
+        $errorDescription = (string) ($result['error_description'] ?? 'error');
 
         throw new ParseResponseException($response, sprintf('%s (%s)', $errorDescription, $error));
     }

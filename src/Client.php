@@ -4,62 +4,105 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient\Github;
 
-use Siganushka\ApiClient\ConfigurableOptionsInterface;
-use Siganushka\ApiClient\ConfigurableOptionsTrait;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Psr\Cache\CacheItemPoolInterface;
+use Siganushka\ApiClient\ConfigurableSubjectInterface;
+use Siganushka\ApiClient\ConfigurableSubjectTrait;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Gitub OAuth client class.
  *
  * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps
  */
-class Client implements ConfigurableOptionsInterface
+class Client implements ConfigurableSubjectInterface
 {
-    use ConfigurableOptionsTrait;
+    use ConfigurableSubjectTrait;
 
     public const URL = 'https://github.com/login/oauth/authorize';
 
-    protected Configuration $configuration;
+    private HttpClientInterface $httpClient;
+    private CacheItemPoolInterface $cachePool;
 
-    public function __construct(Configuration $configuration)
+    public function __construct(HttpClientInterface $httpClient = null, CacheItemPoolInterface $cachePool = null)
     {
-        $this->configuration = $configuration;
+        $this->httpClient = $httpClient ?? HttpClient::create();
+        $this->cachePool = $cachePool ?? new FilesystemAdapter();
     }
 
-    /**
-     * @param array<string, string> $options
-     */
     public function getRedirectUrl(array $options = []): string
     {
-        $resolved = $this->resolve($options);
-        $resolved['client_id'] = $this->configuration['client_id'];
+        $resolver = new OptionsResolver();
+        $this->configure($resolver);
 
-        return static::URL.'?'.http_build_query($resolved);
+        $resolved = $resolver->resolve($options);
+
+        $query = array_filter([
+            'client_id' => $resolved['client_id'],
+            'redirect_uri' => $resolved['redirect_uri'],
+            'login' => $resolved['login'],
+            'scope' => $resolved['scope'],
+            'state' => $resolved['state'],
+            'allow_signup' => $resolved['allow_signup'],
+        ], fn ($value) => null !== $value);
+
+        ksort($query);
+
+        return static::URL.'?'.http_build_query($query);
     }
 
-    /**
-     * @param array<string, string> $options
-     */
-    public function redirect(array $options = []): void
+    public function getAccessToken(array $options = []): array
     {
-        $redirectUrl = $this->getRedirectUrl($options);
-        if (class_exists(RedirectResponse::class)) {
-            $response = new RedirectResponse($redirectUrl);
-            $response->send();
+        $accessToken = new AccessToken($this->cachePool);
+        if (isset($this->configurators[ConfigurationOptions::class])) {
+            $accessToken->using($this->configurators[ConfigurationOptions::class]);
         }
 
-        header(sprintf('Location: %s', $redirectUrl));
+        return $accessToken->send($this->httpClient, $options);
+    }
+
+    public function getUser(array $options = []): array
+    {
+        $user = new User();
+
+        return $user->send($this->httpClient, $options);
     }
 
     protected function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefined(['redirect_uri', 'login', 'scope', 'state', 'allow_signup']);
+        OptionsUtils::client_id($resolver);
+        OptionsUtils::client_secret($resolver);
 
-        $resolver->setAllowedTypes('redirect_uri', 'string');
-        $resolver->setAllowedTypes('login', 'string');
-        $resolver->setAllowedTypes('scope', 'string');
-        $resolver->setAllowedTypes('state', 'string');
-        $resolver->setAllowedValues('allow_signup', ['true', 'false']);
+        $resolver
+            ->define('redirect_uri')
+            ->default(null)
+            ->allowedTypes('null', 'string')
+        ;
+
+        $resolver
+            ->define('login')
+            ->default(null)
+            ->allowedTypes('null', 'string')
+        ;
+
+        $resolver
+            ->define('scope')
+            ->default(null)
+            ->allowedTypes('null', 'string')
+        ;
+
+        $resolver
+            ->define('state')
+            ->default(null)
+            ->allowedTypes('null', 'string')
+        ;
+
+        $resolver
+            ->define('allow_signup')
+            ->default(null)
+            ->allowedValues(null, 'true', 'false')
+        ;
     }
 }

@@ -4,30 +4,39 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient\Github\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\Github\AccessToken;
 use Siganushka\ApiClient\Response\ResponseFactory;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Siganushka\ApiClient\Test\RequestTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
-use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AccessTokenTest extends TestCase
+class AccessTokenTest extends RequestTestCase
 {
-    public function testResolve(): void
+    public function testConfigure(): void
     {
-        $request = static::createRequest();
+        $resolver = new OptionsResolver();
+        $this->request->configure($resolver);
 
-        $resolved = $request->resolve(['code' => 'foo']);
-        static::assertSame('foo', $resolved['code']);
-        static::assertNull($resolved['redirect_uri']);
+        static::assertSame([
+            'client_id',
+            'client_secret',
+            'code',
+            'redirect_uri',
+        ], $resolver->getDefinedOptions());
+
+        static::assertSame([
+            'redirect_uri' => null,
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+            'code' => 'baz',
+        ], $resolver->resolve(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']));
     }
 
     public function testBuild(): void
     {
-        $request = static::createRequest();
-        $requestOptions = $request->build(['code' => 'foo']);
+        $requestOptions = $this->request->build(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
 
         static::assertSame('POST', $requestOptions->getMethod());
         static::assertSame(AccessToken::URL, $requestOptions->getUrl());
@@ -36,21 +45,21 @@ class AccessTokenTest extends TestCase
                 'Accept' => 'application/json',
             ],
             'body' => [
-                'client_id' => 'test_client_id',
-                'client_secret' => 'test_client_secret',
-                'code' => 'foo',
+                'client_id' => 'foo',
+                'client_secret' => 'bar',
+                'code' => 'baz',
             ],
         ], $requestOptions->toArray());
 
-        $requestOptions = $request->build(['code' => 'foo', 'redirect_uri' => '/foo']);
+        $requestOptions = $this->request->build(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz', 'redirect_uri' => '/foo']);
         static::assertSame([
             'headers' => [
                 'Accept' => 'application/json',
             ],
             'body' => [
-                'client_id' => 'test_client_id',
-                'client_secret' => 'test_client_secret',
-                'code' => 'foo',
+                'client_id' => 'foo',
+                'client_secret' => 'bar',
+                'code' => 'baz',
                 'redirect_uri' => '/foo',
             ],
         ], $requestOptions->toArray());
@@ -67,10 +76,7 @@ class AccessTokenTest extends TestCase
         $response = ResponseFactory::createMockResponseWithJson($data);
         $client = new MockHttpClient($response);
 
-        $request = static::createRequest();
-        $request->setHttpClient($client);
-
-        $result = $request->send(['code' => 'foo']);
+        $result = $this->request->send($client, ['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
         static::assertSame($data, $result);
     }
 
@@ -87,37 +93,37 @@ class AccessTokenTest extends TestCase
 
         $response = ResponseFactory::createMockResponseWithJson($data);
 
-        $request = static::createRequest();
-        $parseResponseRef = new \ReflectionMethod($request, 'parseResponse');
+        $parseResponseRef = new \ReflectionMethod($this->request, 'parseResponse');
         $parseResponseRef->setAccessible(true);
-        $parseResponseRef->invoke($request, $response);
+        $parseResponseRef->invoke($this->request, $response);
     }
 
-    public function testCodeMissingException(): void
+    public function testClientIdMissingOptionsException(): void
+    {
+        $this->expectException(MissingOptionsException::class);
+        $this->expectExceptionMessage('The required option "client_id" is missing');
+
+        $this->request->build(['client_secret' => 'bar', 'code' => 'baz']);
+    }
+
+    public function testClientSecretMissingOptionsException(): void
+    {
+        $this->expectException(MissingOptionsException::class);
+        $this->expectExceptionMessage('The required option "client_secret" is missing');
+
+        $this->request->build(['client_id' => 'foo', 'code' => 'baz']);
+    }
+
+    public function testCodeMissingOptionsException(): void
     {
         $this->expectException(MissingOptionsException::class);
         $this->expectExceptionMessage('The required option "code" is missing');
 
-        $request = static::createRequest();
-        $request->resolve();
+        $this->request->build(['client_id' => 'foo', 'client_secret' => 'bar']);
     }
 
-    public function testCodeInvalidException(): void
+    protected function createRequest(): AccessToken
     {
-        $this->expectException(InvalidOptionsException::class);
-        $this->expectExceptionMessage('The option "code" with value 123 is expected to be of type "string", but is of type "int"');
-
-        $request = static::createRequest();
-        $request->resolve(['code' => 123]);
-    }
-
-    public static function createRequest(): AccessToken
-    {
-        $cachePool = new FilesystemAdapter();
-        $cachePool->clear();
-
-        $configuration = ConfigurationTest::createConfiguration();
-
-        return new AccessToken($cachePool, $configuration);
+        return new AccessToken();
     }
 }

@@ -14,7 +14,7 @@ class Configuration extends AbstractConfiguration
 {
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setRequired('client_id');
-        $resolver->setRequired('client_secret');
+        OptionsUtils::client_id($resolver);
+        OptionsUtils::client_secret($resolver);
     }
 }

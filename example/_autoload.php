@@ -3,16 +3,13 @@
 declare(strict_types=1);
 
 use Siganushka\ApiClient\Github\Configuration;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Siganushka\ApiClient\Github\GithubExtension;
+use Siganushka\ApiClient\RequestClient;
+use Siganushka\ApiClient\RequestFactoryBuilder;
 use Symfony\Component\ErrorHandler\Debug;
-use Symfony\Component\HttpClient\HttpClient;
 
-$configFile = __DIR__.'/_config.php';
-if (!is_file($configFile)) {
-    exit('请复制 _config.php.dist 为 _config.php 并填写参数！');
-}
+require __DIR__.'/../vendor/autoload.php';
 
-require $configFile;
 Debug::enable();
 
 if (!function_exists('dd')) {
@@ -23,10 +20,17 @@ if (!function_exists('dd')) {
     }
 }
 
-$httpClient = HttpClient::create();
-$cachePool = new FilesystemAdapter();
+$configFile = __DIR__.'/_config.php';
+if (!is_file($configFile)) {
+    exit('请复制 _config.php.dist 为 _config.php 并填写参数！');
+}
 
-$configuration = new Configuration([
-    'client_id' => CLIENT_ID,
-    'client_secret' => CLIENT_SECRET,
-]);
+$configs = require $configFile;
+$configuration = new Configuration($configs);
+
+$factory = RequestFactoryBuilder::create()
+    ->addExtension(new GithubExtension($configuration))
+    ->getFactory()
+;
+
+$client = new RequestClient($factory);

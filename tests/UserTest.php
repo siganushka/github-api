@@ -4,27 +4,34 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient\Github\Tests;
 
-use PHPUnit\Framework\TestCase;
+use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\Github\User;
 use Siganushka\ApiClient\Response\ResponseFactory;
+use Siganushka\ApiClient\Test\RequestTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class UserTest extends TestCase
+class UserTest extends RequestTestCase
 {
-    public function testResolve(): void
+    public function testConfigure(): void
     {
-        $request = static::createRequest();
+        $resolver = new OptionsResolver();
+        $this->request->configure($resolver);
 
-        $resolved = $request->resolve(['access_token' => 'foo']);
-        static::assertSame('foo', $resolved['access_token']);
+        static::assertSame([
+            'access_token',
+        ], $resolver->getDefinedOptions());
+
+        static::assertSame([
+            'access_token' => 'foo',
+        ], $resolver->resolve(['access_token' => 'foo']));
     }
 
     public function testBuild(): void
     {
-        $request = static::createRequest();
-        $requestOptions = $request->build(['access_token' => 'foo']);
+        $requestOptions = $this->request->build(['access_token' => 'foo']);
 
         static::assertSame('GET', $requestOptions->getMethod());
         static::assertSame(User::URL, $requestOptions->getUrl());
@@ -44,11 +51,26 @@ class UserTest extends TestCase
         $response = ResponseFactory::createMockResponseWithJson($data);
         $client = new MockHttpClient($response);
 
-        $request = static::createRequest();
-        $request->setHttpClient($client);
-
-        $result = $request->send(['access_token' => 'foo']);
+        $result = $this->request->send($client, ['access_token' => 'foo']);
         static::assertSame($data, $result);
+    }
+
+    public function testParseResponseException(): void
+    {
+        $this->expectException(ParseResponseException::class);
+        $this->expectExceptionCode(0);
+        $this->expectExceptionMessage('test error (error)');
+
+        $data = [
+            'error' => 'error',
+            'error_description' => 'test error',
+        ];
+
+        $response = ResponseFactory::createMockResponseWithJson($data);
+
+        $parseResponseRef = new \ReflectionMethod($this->request, 'parseResponse');
+        $parseResponseRef->setAccessible(true);
+        $parseResponseRef->invoke($this->request, $response);
     }
 
     public function testAccessTokenMissingOptionsException(): void
@@ -56,8 +78,7 @@ class UserTest extends TestCase
         $this->expectException(MissingOptionsException::class);
         $this->expectExceptionMessage('The required option "access_token" is missing');
 
-        $request = static::createRequest();
-        $request->resolve();
+        $this->request->build();
     }
 
     public function testAccessTokenInvalidOptionsException(): void
@@ -65,11 +86,10 @@ class UserTest extends TestCase
         $this->expectException(InvalidOptionsException::class);
         $this->expectExceptionMessage('The option "access_token" with value 123 is expected to be of type "string", but is of type "int"');
 
-        $request = static::createRequest();
-        $request->resolve(['access_token' => 123]);
+        $this->request->build(['access_token' => 123]);
     }
 
-    public static function createRequest(): User
+    protected function createRequest(): User
     {
         return new User();
     }
