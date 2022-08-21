@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Siganushka\ApiClient\Github\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Siganushka\ApiClient\Github\AccessToken;
 use Siganushka\ApiClient\Github\Configuration;
 use Siganushka\ApiClient\Github\ConfigurationOptions;
+use Siganushka\ApiClient\Github\OAuth\AccessToken;
+use Siganushka\ApiClient\Github\OAuth\Client;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ConfigurationOptionsTest extends TestCase
@@ -38,13 +39,14 @@ class ConfigurationOptionsTest extends TestCase
         ]));
     }
 
-    public function testGetExtendedRequests(): void
+    public function testGetExtendedClasses(): void
     {
         $configurationOptions = static::create();
 
         static::assertSame([
+            Client::class,
             AccessToken::class,
-        ], $configurationOptions::getExtendedRequests());
+        ], $configurationOptions::getExtendedClasses());
     }
 
     public static function create(Configuration $configuration = null): ConfigurationOptions

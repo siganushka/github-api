@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient\Github;
 
-use Siganushka\ApiClient\RequestOptionsExtensionInterface;
-use Siganushka\ApiClient\RequestOptionsExtensionTrait;
+use Siganushka\ApiClient\Github\OAuth\AccessToken;
+use Siganushka\ApiClient\Github\OAuth\Client;
+use Siganushka\ApiClient\OptionsExtensionInterface;
+use Siganushka\ApiClient\OptionsExtensionTrait;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class ConfigurationOptions implements RequestOptionsExtensionInterface
+class ConfigurationOptions implements OptionsExtensionInterface
 {
-    use RequestOptionsExtensionTrait;
+    use OptionsExtensionTrait;
 
     private Configuration $configuration;
 
@@ -26,9 +28,10 @@ class ConfigurationOptions implements RequestOptionsExtensionInterface
         }
     }
 
-    public static function getExtendedRequests(): array
+    public static function getExtendedClasses(): array
     {
         return [
+            Client::class,
             AccessToken::class,
         ];
     }

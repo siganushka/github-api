@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github\Tests;
+namespace Siganushka\ApiClient\Github\Tests\OAuth;
 
 use Siganushka\ApiClient\Exception\ParseResponseException;
-use Siganushka\ApiClient\Github\AccessToken;
+use Siganushka\ApiClient\Github\OAuth\AccessToken;
 use Siganushka\ApiClient\Response\ResponseFactory;
 use Siganushka\ApiClient\Test\RequestTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -76,7 +76,7 @@ class AccessTokenTest extends RequestTestCase
         $response = ResponseFactory::createMockResponseWithJson($data);
         $client = new MockHttpClient($response);
 
-        $result = $this->request->send($client, ['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
+        $result = $this->request->setHttpClient($client)->send(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
         static::assertSame($data, $result);
     }
 

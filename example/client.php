@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Siganushka\ApiClient\Github\Client;
 use Siganushka\ApiClient\Github\ConfigurationOptions;
+use Siganushka\ApiClient\Github\OAuth\Client;
 
 require __DIR__.'/_autoload.php';
 

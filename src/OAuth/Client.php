@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github;
+namespace Siganushka\ApiClient\Github\OAuth;
 
 use Psr\Cache\CacheItemPoolInterface;
-use Siganushka\ApiClient\ConfigurableSubjectInterface;
-use Siganushka\ApiClient\ConfigurableSubjectTrait;
+use Siganushka\ApiClient\Github\ConfigurationOptions;
+use Siganushka\ApiClient\Github\OptionsUtils;
+use Siganushka\ApiClient\OptionsConfiguratorInterface;
+use Siganushka\ApiClient\OptionsConfiguratorTrait;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -17,9 +19,9 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  *
  * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps
  */
-class Client implements ConfigurableSubjectInterface
+class Client implements OptionsConfiguratorInterface
 {
-    use ConfigurableSubjectTrait;
+    use OptionsConfiguratorTrait;
 
     public const URL = 'https://github.com/login/oauth/authorize';
 
@@ -56,18 +58,21 @@ class Client implements ConfigurableSubjectInterface
     public function getAccessToken(array $options = []): array
     {
         $accessToken = new AccessToken($this->cachePool);
-        if (isset($this->configurators[ConfigurationOptions::class])) {
-            $accessToken->using($this->configurators[ConfigurationOptions::class]);
+        $accessToken->setHttpClient($this->httpClient);
+
+        if (isset($this->extensions[ConfigurationOptions::class])) {
+            $accessToken->using($this->extensions[ConfigurationOptions::class]);
         }
 
-        return $accessToken->send($this->httpClient, $options);
+        return $accessToken->send($options);
     }
 
     public function getUser(array $options = []): array
     {
         $user = new User();
+        $user->setHttpClient($this->httpClient);
 
-        return $user->send($this->httpClient, $options);
+        return $user->send($options);
     }
 
     protected function configureOptions(OptionsResolver $resolver): void

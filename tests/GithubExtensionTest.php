@@ -6,8 +6,8 @@ namespace Siganushka\ApiClient\Github\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\Github\GithubExtension;
+use Siganushka\ApiClient\OptionsExtensionInterface;
 use Siganushka\ApiClient\RequestInterface;
-use Siganushka\ApiClient\RequestOptionsExtensionInterface;
 
 class GithubExtensionTest extends TestCase
 {
@@ -24,7 +24,7 @@ class GithubExtensionTest extends TestCase
         }
 
         foreach ($extension->loadOptionsExtensions() as $extension) {
-            static::assertInstanceOf(RequestOptionsExtensionInterface::class, $extension);
+            static::assertInstanceOf(OptionsExtensionInterface::class, $extension);
         }
     }
 }

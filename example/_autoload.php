@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Siganushka\ApiClient\Github\Configuration;
 use Siganushka\ApiClient\Github\GithubExtension;
 use Siganushka\ApiClient\RequestClient;
+use Siganushka\ApiClient\RequestClientBuilder;
 use Siganushka\ApiClient\RequestFactoryBuilder;
 use Symfony\Component\ErrorHandler\Debug;
 
@@ -28,9 +29,7 @@ if (!is_file($configFile)) {
 $configs = require $configFile;
 $configuration = new Configuration($configs);
 
-$factory = RequestFactoryBuilder::create()
+$client = RequestClientBuilder::create()
     ->addExtension(new GithubExtension($configuration))
-    ->getFactory()
+    ->build()
 ;
-
-$client = new RequestClient($factory);

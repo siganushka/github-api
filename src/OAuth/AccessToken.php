@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github;
+namespace Siganushka\ApiClient\Github\OAuth;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Siganushka\ApiClient\AbstractRequest;
 use Siganushka\ApiClient\Exception\ParseResponseException;
+use Siganushka\ApiClient\Github\OptionsUtils;
 use Siganushka\ApiClient\RequestOptions;
 use Siganushka\ApiClient\Response\ResponseFactory;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
@@ -67,14 +67,14 @@ class AccessToken extends AbstractRequest
         ;
     }
 
-    protected function sendRequest(HttpClientInterface $client, RequestOptions $request): ResponseInterface
+    protected function sendRequest(RequestOptions $request): ResponseInterface
     {
         $cacheItem = $this->cachePool->getItem((string) $request);
         if ($cacheItem->isHit()) {
             return ResponseFactory::createMockResponseWithJson($cacheItem->get());
         }
 
-        $response = parent::sendRequest($client, $request);
+        $response = parent::sendRequest($request);
         $parsedResponse = $this->parseResponse($response);
 
         $cacheItem->set($parsedResponse);
