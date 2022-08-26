@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Siganushka\ApiClient\Github;
 
 use Psr\Cache\CacheItemPoolInterface;
+use Siganushka\ApiClient\ExtensionInterface;
 use Siganushka\ApiClient\Github\OAuth\AccessToken;
 use Siganushka\ApiClient\Github\OAuth\User;
-use Siganushka\ApiClient\RequestExtensionInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
-class GithubExtension implements RequestExtensionInterface
+class GithubExtension implements ExtensionInterface
 {
     private Configuration $configuration;
     private CacheItemPoolInterface $cachePool;
