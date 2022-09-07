@@ -4,16 +4,29 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient\Github\Tests\OAuth;
 
+use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\Github\OAuth\AccessToken;
-use Siganushka\ApiClient\Response\ResponseFactory;
-use Siganushka\ApiClient\Test\RequestTestCase;
+use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AccessTokenTest extends RequestTestCase
+class AccessTokenTest extends TestCase
 {
+    protected ?AccessToken $request = null;
+
+    protected function setUp(): void
+    {
+        $this->request = new AccessToken();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->request = null;
+    }
+
     public function testConfigure(): void
     {
         $resolver = new OptionsResolver();
@@ -67,16 +80,13 @@ class AccessTokenTest extends RequestTestCase
 
     public function testSend(): void
     {
-        $data = [
-            'access_token' => 'foo',
-            'scope' => 12,
-            'token_type' => 'bar',
-        ];
+        $data = ['access_token' => 'foo', 'scope' => 12, 'token_type' => 'bar'];
+        $body = json_encode($data);
 
-        $response = ResponseFactory::createMockResponseWithJson($data);
-        $client = new MockHttpClient($response);
+        $mockResponse = new MockResponse($body);
+        $client = new MockHttpClient($mockResponse);
 
-        $result = $this->request->setHttpClient($client)->send(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
+        $result = (new AccessToken($client))->send(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
         static::assertSame($data, $result);
     }
 
@@ -86,16 +96,15 @@ class AccessTokenTest extends RequestTestCase
         $this->expectExceptionCode(0);
         $this->expectExceptionMessage('test error (error)');
 
-        $data = [
-            'error' => 'error',
-            'error_description' => 'test error',
-        ];
+        $data = ['error' => 'error', 'error_description' => 'test error'];
+        $body = json_encode($data);
 
-        $response = ResponseFactory::createMockResponseWithJson($data);
+        $mockResponse = new MockResponse($body);
+        $client = new MockHttpClient($mockResponse);
 
-        $parseResponseRef = new \ReflectionMethod($this->request, 'parseResponse');
-        $parseResponseRef->setAccessible(true);
-        $parseResponseRef->invoke($this->request, $response);
+        $cachePool = new NullAdapter();
+
+        (new AccessToken($client, $cachePool))->send(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
     }
 
     public function testClientIdMissingOptionsException(): void
@@ -120,10 +129,5 @@ class AccessTokenTest extends RequestTestCase
         $this->expectExceptionMessage('The required option "code" is missing');
 
         $this->request->build(['client_id' => 'foo', 'client_secret' => 'bar']);
-    }
-
-    protected function createRequest(): AccessToken
-    {
-        return new AccessToken();
     }
 }

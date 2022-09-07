@@ -4,17 +4,29 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient\Github\Tests\OAuth;
 
+use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\Github\OAuth\User;
-use Siganushka\ApiClient\Response\ResponseFactory;
-use Siganushka\ApiClient\Test\RequestTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class UserTest extends RequestTestCase
+class UserTest extends TestCase
 {
+    protected ?User $request = null;
+
+    protected function setUp(): void
+    {
+        $this->request = new User();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->request = null;
+    }
+
     public function testConfigure(): void
     {
         $resolver = new OptionsResolver();
@@ -44,14 +56,13 @@ class UserTest extends RequestTestCase
 
     public function testSend(): void
     {
-        $data = [
-            'id' => 65535,
-        ];
+        $data = ['id' => 65535];
+        $body = json_encode($data);
 
-        $response = ResponseFactory::createMockResponseWithJson($data);
-        $client = new MockHttpClient($response);
+        $mockResponse = new MockResponse($body);
+        $client = new MockHttpClient($mockResponse);
 
-        $result = $this->request->setHttpClient($client)->send(['access_token' => 'foo']);
+        $result = (new User($client))->send(['access_token' => 'foo']);
         static::assertSame($data, $result);
     }
 
@@ -61,16 +72,13 @@ class UserTest extends RequestTestCase
         $this->expectExceptionCode(0);
         $this->expectExceptionMessage('test error (error)');
 
-        $data = [
-            'error' => 'error',
-            'error_description' => 'test error',
-        ];
+        $data = ['error' => 'error', 'error_description' => 'test error'];
+        $body = json_encode($data);
 
-        $response = ResponseFactory::createMockResponseWithJson($data);
+        $mockResponse = new MockResponse($body);
+        $client = new MockHttpClient($mockResponse);
 
-        $parseResponseRef = new \ReflectionMethod($this->request, 'parseResponse');
-        $parseResponseRef->setAccessible(true);
-        $parseResponseRef->invoke($this->request, $response);
+        (new User($client))->send(['access_token' => 'foo']);
     }
 
     public function testAccessTokenMissingOptionsException(): void
@@ -87,10 +95,5 @@ class UserTest extends RequestTestCase
         $this->expectExceptionMessage('The option "access_token" with value 123 is expected to be of type "string", but is of type "int"');
 
         $this->request->build(['access_token' => 123]);
-    }
-
-    protected function createRequest(): User
-    {
-        return new User();
     }
 }

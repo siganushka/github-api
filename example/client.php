@@ -8,7 +8,7 @@ use Siganushka\ApiClient\Github\OAuth\Client;
 require __DIR__.'/_autoload.php';
 
 $client = new Client();
-$client->using(new ConfigurationOptions($configuration));
+$client->extend(new ConfigurationOptions($configuration));
 
 if (!isset($_GET['code'])) {
     $currentUrl = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://').

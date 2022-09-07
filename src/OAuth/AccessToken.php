@@ -9,9 +9,10 @@ use Siganushka\ApiClient\AbstractRequest;
 use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\Github\OptionsUtils;
 use Siganushka\ApiClient\RequestOptions;
-use Siganushka\ApiClient\Response\ResponseFactory;
+use Siganushka\ApiClient\Response\CachedResponse;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
@@ -23,9 +24,11 @@ class AccessToken extends AbstractRequest
 
     private CacheItemPoolInterface $cachePool;
 
-    public function __construct(CacheItemPoolInterface $cachePool = null)
+    public function __construct(HttpClientInterface $httpClient = null, CacheItemPoolInterface $cachePool = null)
     {
         $this->cachePool = $cachePool ?? new FilesystemAdapter();
+
+        parent::__construct($httpClient);
     }
 
     protected function configureOptions(OptionsResolver $resolver): void
@@ -71,7 +74,7 @@ class AccessToken extends AbstractRequest
     {
         $cacheItem = $this->cachePool->getItem((string) $request);
         if ($cacheItem->isHit()) {
-            return ResponseFactory::createMockResponseWithJson($cacheItem->get());
+            return CachedResponse::createFromJson($cacheItem->get());
         }
 
         $response = parent::sendRequest($request);

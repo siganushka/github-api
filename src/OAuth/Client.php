@@ -7,10 +7,8 @@ namespace Siganushka\ApiClient\Github\OAuth;
 use Psr\Cache\CacheItemPoolInterface;
 use Siganushka\ApiClient\Github\ConfigurationOptions;
 use Siganushka\ApiClient\Github\OptionsUtils;
-use Siganushka\ApiClient\OptionsConfiguratorInterface;
-use Siganushka\ApiClient\OptionsConfiguratorTrait;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\HttpClient\HttpClient;
+use Siganushka\ApiClient\OptionsConfigurableInterface;
+use Siganushka\ApiClient\OptionsConfigurableTrait;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -19,19 +17,19 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  *
  * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps
  */
-class Client implements OptionsConfiguratorInterface
+class Client implements OptionsConfigurableInterface
 {
-    use OptionsConfiguratorTrait;
+    use OptionsConfigurableTrait;
 
     public const URL = 'https://github.com/login/oauth/authorize';
 
-    private HttpClientInterface $httpClient;
-    private CacheItemPoolInterface $cachePool;
+    private ?HttpClientInterface $httpClient = null;
+    private ?CacheItemPoolInterface $cachePool = null;
 
     public function __construct(HttpClientInterface $httpClient = null, CacheItemPoolInterface $cachePool = null)
     {
-        $this->httpClient = $httpClient ?? HttpClient::create();
-        $this->cachePool = $cachePool ?? new FilesystemAdapter();
+        $this->httpClient = $httpClient;
+        $this->cachePool = $cachePool;
     }
 
     public function getRedirectUrl(array $options = []): string
@@ -57,11 +55,10 @@ class Client implements OptionsConfiguratorInterface
 
     public function getAccessToken(array $options = []): array
     {
-        $accessToken = new AccessToken($this->cachePool);
-        $accessToken->setHttpClient($this->httpClient);
+        $accessToken = new AccessToken($this->httpClient, $this->cachePool);
 
         if (isset($this->extensions[ConfigurationOptions::class])) {
-            $accessToken->using($this->extensions[ConfigurationOptions::class]);
+            $accessToken->extend($this->extensions[ConfigurationOptions::class]);
         }
 
         return $accessToken->send($options);
@@ -69,8 +66,7 @@ class Client implements OptionsConfiguratorInterface
 
     public function getUser(array $options = []): array
     {
-        $user = new User();
-        $user->setHttpClient($this->httpClient);
+        $user = new User($this->httpClient);
 
         return $user->send($options);
     }
