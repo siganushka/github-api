@@ -5,7 +5,7 @@
     bootstrap="vendor/autoload.php">
 
     <testsuites>
-        <testsuite name="Siganushka API Client Test Suite">
+        <testsuite name="Siganushka Github API Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>

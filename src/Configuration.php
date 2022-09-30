@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github;
+namespace Siganushka\ApiFactory\Github;
 
-use Siganushka\ApiClient\AbstractConfiguration;
+use Siganushka\ApiFactory\AbstractConfiguration;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Gitub configuration.
+ * Github Configuration.
  */
 class Configuration extends AbstractConfiguration
 {
-    public function configureOptions(OptionsResolver $resolver): void
+    protected function configureOptions(OptionsResolver $resolver): void
     {
         OptionsUtils::client_id($resolver);
         OptionsUtils::client_secret($resolver);

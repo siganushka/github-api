@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github\Tests\OAuth;
+namespace Siganushka\ApiFactory\Github\Tests\OAuth;
 
 use PHPUnit\Framework\TestCase;
-use Siganushka\ApiClient\Github\OAuth\Client;
+use Siganushka\ApiFactory\Github\OAuth\Client;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ClientTest extends TestCase
 {
@@ -23,43 +22,30 @@ class ClientTest extends TestCase
         $this->client = null;
     }
 
-    public function testConfigure(): void
+    public function testResolve(): void
     {
-        $resolver = new OptionsResolver();
-        $this->client->configure($resolver);
-
-        static::assertSame([
-            'client_id',
-            'client_secret',
-            'redirect_uri',
-            'login',
-            'scope',
-            'state',
-            'allow_signup',
-        ], $resolver->getDefinedOptions());
-
-        static::assertSame([
+        static::assertEquals([
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
             'redirect_uri' => null,
             'login' => null,
             'scope' => null,
             'state' => null,
             'allow_signup' => null,
-            'client_id' => 'foo',
-            'client_secret' => 'bar',
-        ], $resolver->resolve([
+        ], $this->client->resolve([
             'client_id' => 'foo',
             'client_secret' => 'bar',
         ]));
 
-        static::assertSame([
+        static::assertEquals([
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
             'redirect_uri' => 'test_redirect_uri',
             'login' => 'test_login',
             'scope' => 'test_scope',
             'state' => 'test_state',
             'allow_signup' => 'true',
-            'client_id' => 'foo',
-            'client_secret' => 'bar',
-        ], $resolver->resolve([
+        ], $this->client->resolve([
             'client_id' => 'foo',
             'client_secret' => 'bar',
             'redirect_uri' => 'test_redirect_uri',

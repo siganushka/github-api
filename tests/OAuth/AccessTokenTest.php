@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github\Tests\OAuth;
+namespace Siganushka\ApiFactory\Github\Tests\OAuth;
 
 use PHPUnit\Framework\TestCase;
-use Siganushka\ApiClient\Exception\ParseResponseException;
-use Siganushka\ApiClient\Github\OAuth\AccessToken;
+use Siganushka\ApiFactory\Exception\ParseResponseException;
+use Siganushka\ApiFactory\Github\OAuth\AccessToken;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AccessTokenTest extends TestCase
 {
@@ -27,24 +26,27 @@ class AccessTokenTest extends TestCase
         $this->request = null;
     }
 
-    public function testConfigure(): void
+    public function testResolve(): void
     {
-        $resolver = new OptionsResolver();
-        $this->request->configure($resolver);
+        $options = [
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+            'code' => 'baz',
+        ];
 
-        static::assertSame([
-            'client_id',
-            'client_secret',
-            'code',
-            'redirect_uri',
-        ], $resolver->getDefinedOptions());
-
-        static::assertSame([
+        static::assertEquals([
             'redirect_uri' => null,
             'client_id' => 'foo',
             'client_secret' => 'bar',
             'code' => 'baz',
-        ], $resolver->resolve(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']));
+        ], $this->request->resolve($options));
+
+        static::assertEquals([
+            'redirect_uri' => '/foo',
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+            'code' => 'baz',
+        ], $this->request->resolve($options + ['redirect_uri' => '/foo']));
     }
 
     public function testBuild(): void
@@ -53,7 +55,7 @@ class AccessTokenTest extends TestCase
 
         static::assertSame('POST', $requestOptions->getMethod());
         static::assertSame(AccessToken::URL, $requestOptions->getUrl());
-        static::assertSame([
+        static::assertEquals([
             'headers' => [
                 'Accept' => 'application/json',
             ],
@@ -65,7 +67,7 @@ class AccessTokenTest extends TestCase
         ], $requestOptions->toArray());
 
         $requestOptions = $this->request->build(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz', 'redirect_uri' => '/foo']);
-        static::assertSame([
+        static::assertEquals([
             'headers' => [
                 'Accept' => 'application/json',
             ],
@@ -90,7 +92,7 @@ class AccessTokenTest extends TestCase
         static::assertSame($data, $result);
     }
 
-    public function testParseResponseException(): void
+    public function testSendWithParseResponseException(): void
     {
         $this->expectException(ParseResponseException::class);
         $this->expectExceptionCode(0);
@@ -112,7 +114,10 @@ class AccessTokenTest extends TestCase
         $this->expectException(MissingOptionsException::class);
         $this->expectExceptionMessage('The required option "client_id" is missing');
 
-        $this->request->build(['client_secret' => 'bar', 'code' => 'baz']);
+        $this->request->build([
+            'client_secret' => 'bar',
+            'code' => 'baz',
+        ]);
     }
 
     public function testClientSecretMissingOptionsException(): void
@@ -120,7 +125,10 @@ class AccessTokenTest extends TestCase
         $this->expectException(MissingOptionsException::class);
         $this->expectExceptionMessage('The required option "client_secret" is missing');
 
-        $this->request->build(['client_id' => 'foo', 'code' => 'baz']);
+        $this->request->build([
+            'client_id' => 'foo',
+            'code' => 'baz',
+        ]);
     }
 
     public function testCodeMissingOptionsException(): void
@@ -128,6 +136,9 @@ class AccessTokenTest extends TestCase
         $this->expectException(MissingOptionsException::class);
         $this->expectExceptionMessage('The required option "code" is missing');
 
-        $this->request->build(['client_id' => 'foo', 'client_secret' => 'bar']);
+        $this->request->build([
+            'client_id' => 'foo',
+            'client_secret' => 'bar',
+        ]);
     }
 }

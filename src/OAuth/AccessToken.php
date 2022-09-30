@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github\OAuth;
+namespace Siganushka\ApiFactory\Github\OAuth;
 
 use Psr\Cache\CacheItemPoolInterface;
-use Siganushka\ApiClient\AbstractRequest;
-use Siganushka\ApiClient\Exception\ParseResponseException;
-use Siganushka\ApiClient\Github\OptionsUtils;
-use Siganushka\ApiClient\RequestOptions;
-use Siganushka\ApiClient\Response\CachedResponse;
+use Siganushka\ApiFactory\AbstractRequest;
+use Siganushka\ApiFactory\Exception\ParseResponseException;
+use Siganushka\ApiFactory\Github\OptionsUtils;
+use Siganushka\ApiFactory\RequestOptions;
+use Siganushka\ApiFactory\Response\CachedResponse;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\HttpClientInterface;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github;
+namespace Siganushka\ApiFactory\Github;
 
 use Symfony\Component\OptionsResolver\OptionConfigurator;
 use Symfony\Component\OptionsResolver\OptionsResolver;

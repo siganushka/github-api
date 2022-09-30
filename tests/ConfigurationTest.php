@@ -2,37 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Siganushka\ApiClient\Github\Tests;
+namespace Siganushka\ApiFactory\Github\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Siganushka\ApiClient\Github\Configuration;
+use Siganushka\ApiFactory\Github\Configuration;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
-use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ConfigurationTest extends TestCase
 {
-    public function testConfigure(): void
-    {
-        $resolver = new OptionsResolver();
-
-        $configuration = static::create();
-        $configuration->configure($resolver);
-
-        static::assertSame([
-            'client_id',
-            'client_secret',
-        ], $resolver->getDefinedOptions());
-
-        static::assertSame([
-            'client_id' => 'foo',
-            'client_secret' => 'bar',
-        ], $resolver->resolve([
-            'client_id' => 'foo',
-            'client_secret' => 'bar',
-        ]));
-    }
-
     public function testAll(): void
     {
         $configuration = static::create();
@@ -42,18 +19,23 @@ class ConfigurationTest extends TestCase
         static::assertInstanceOf(\ArrayAccess::class, $configuration);
         static::assertSame(2, $configuration->count());
 
-        static::assertSame([
+        static::assertEquals([
             'client_id' => 'test_client_id',
             'client_secret' => 'test_client_secret',
         ], $configuration->toArray());
     }
 
-    public function testClientIdMissingOptionsException(): void
+    public function testResolve(): void
     {
-        $this->expectException(MissingOptionsException::class);
-        $this->expectExceptionMessage('The required option "client_id" is missing');
+        $configuration = static::create();
 
-        static::create(['client_secret' => 'bar']);
+        $configs = [
+            'client_id' => 'test_client_id',
+            'client_secret' => 'test_client_secret',
+        ];
+
+        $configuration = static::create($configs);
+        static::assertEquals($configuration->toArray(), $configuration->resolve($configs));
     }
 
     public function testClientIdInvalidOptionsException(): void
@@ -61,15 +43,10 @@ class ConfigurationTest extends TestCase
         $this->expectException(InvalidOptionsException::class);
         $this->expectExceptionMessage('The option "client_id" with value 123 is expected to be of type "string", but is of type "int"');
 
-        static::create(['client_id' => 123, 'client_secret' => 'bar']);
-    }
-
-    public function testClientSecretMissingOptionsException(): void
-    {
-        $this->expectException(MissingOptionsException::class);
-        $this->expectExceptionMessage('The required option "client_secret" is missing');
-
-        static::create(['client_id' => 'foo']);
+        static::create([
+            'client_id' => 123,
+            'client_secret' => 'test_client_secret',
+        ]);
     }
 
     public function testClientSecretInvalidOptionsException(): void
@@ -77,7 +54,10 @@ class ConfigurationTest extends TestCase
         $this->expectException(InvalidOptionsException::class);
         $this->expectExceptionMessage('The option "client_secret" with value 123 is expected to be of type "string", but is of type "int"');
 
-        static::create(['client_id' => 'foo', 'client_secret' => 123]);
+        static::create([
+            'client_id' => 'test_client_id',
+            'client_secret' => 123,
+        ]);
     }
 
     public static function create(array $configs = null): Configuration

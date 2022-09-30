@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
+// client_id 填写你的 Github client_id
+// client_secret 填写你的 Github client_id
+
 return [
-    // 填写你的 Github client_id
-    'client_id' => 'your_github_client_id',
-    // 填写你的 Github client_secret
-    'client_secret' => 'your_github_client_secret',
+    'client_id' => 'your_client_id',
+    'client_secret' => 'your_client_secret',
 ];

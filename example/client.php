@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Siganushka\ApiClient\Github\ConfigurationOptions;
-use Siganushka\ApiClient\Github\OAuth\Client;
+use Siganushka\ApiFactory\Github\ConfigurationExtension;
+use Siganushka\ApiFactory\Github\OAuth\Client;
 
 require __DIR__.'/_autoload.php';
 
 $client = new Client();
-$client->extend(new ConfigurationOptions($configuration));
+$client->extend(new ConfigurationExtension($configuration));
 
 if (!isset($_GET['code'])) {
     $currentUrl = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://').
@@ -17,10 +17,6 @@ if (!isset($_GET['code'])) {
 
     $options = [
         'redirect_uri' => $currentUrl,
-        'login' => 'login_value',
-        'scope' => 'scope_value',
-        'state' => 'state_value',
-        'allow_signup' => 'true',
     ];
 
     $redirectUrl = $client->getRedirectUrl($options);
@@ -28,14 +24,14 @@ if (!isset($_GET['code'])) {
     exit;
 }
 
-// 获取已授权用户的 access_token
-$accessToken = $client->getAccessToken([
+// 获取已授权用户令牌
+$result = $client->getAccessToken([
     'code' => $_GET['code'],
 ]);
-dump('getAccessToken', $accessToken);
+dump('用户令牌：', $result);
 
-// 根据已授权用户的 access_token 获取用户信息
-$user = $client->getUser([
-    'access_token' => $accessToken['access_token'],
+// 根据已授权用户令牌获取用户信息
+$result = $client->getUser([
+    'access_token' => $result['access_token'],
 ]);
-dump('user', $user);
+dump('用户信息：', $result);

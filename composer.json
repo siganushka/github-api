@@ -1,6 +1,8 @@
 {
     "name": "siganushka/github-api",
     "description": "Github API.",
+    "keywords": ["github-api"],
+    "homepage": "https://github.com/siganushka/github-api",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -11,21 +13,22 @@
     ],
     "require": {
         "php": ">=7.4",
-        "siganushka/api-client": "dev-main",
+        "siganushka/api-factory": "dev-main",
         "symfony/cache": "^5.4|^6.0"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "^6.0",
-        "symfony/error-handler": "^5.4|^6.0"
+        "symfony/dependency-injection": "^5.4|^6.0",
+        "symfony/error-handler": "^5.4|^6.0",
+        "symfony/phpunit-bridge": "^6.0"
     },
     "autoload": {
         "psr-4": {
-            "Siganushka\\ApiClient\\Github\\": "src/"
+            "Siganushka\\ApiFactory\\Github\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Siganushka\\ApiClient\\Github\\Tests\\": "tests/"
+            "Siganushka\\ApiFactory\\Github\\Tests\\": "tests/"
         }
     },
     "config": {
