@@ -12,7 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class Configuration extends AbstractConfiguration
 {
-    protected function configureOptions(OptionsResolver $resolver): void
+    public static function configureOptions(OptionsResolver $resolver): void
     {
         OptionsUtils::client_id($resolver);
         OptionsUtils::client_secret($resolver);

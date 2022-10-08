@@ -25,19 +25,6 @@ class ConfigurationTest extends TestCase
         ], $configuration->toArray());
     }
 
-    public function testResolve(): void
-    {
-        $configuration = static::create();
-
-        $configs = [
-            'client_id' => 'test_client_id',
-            'client_secret' => 'test_client_secret',
-        ];
-
-        $configuration = static::create($configs);
-        static::assertEquals($configuration->toArray(), $configuration->resolve($configs));
-    }
-
     public function testClientIdInvalidOptionsException(): void
     {
         $this->expectException(InvalidOptionsException::class);
