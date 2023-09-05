@@ -7,7 +7,7 @@ namespace Siganushka\ApiFactory\Github\OAuth;
 use Psr\Cache\CacheItemPoolInterface;
 use Siganushka\ApiFactory\AbstractRequest;
 use Siganushka\ApiFactory\Exception\ParseResponseException;
-use Siganushka\ApiFactory\Github\OptionsUtils;
+use Siganushka\ApiFactory\Github\OptionSet;
 use Siganushka\ApiFactory\RequestOptions;
 use Siganushka\ApiFactory\Response\CachedResponse;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -33,8 +33,8 @@ class AccessToken extends AbstractRequest
 
     protected function configureOptions(OptionsResolver $resolver): void
     {
-        OptionsUtils::client_id($resolver);
-        OptionsUtils::client_secret($resolver);
+        OptionSet::client_id($resolver);
+        OptionSet::client_secret($resolver);
 
         $resolver
             ->define('code')

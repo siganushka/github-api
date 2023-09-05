@@ -7,7 +7,7 @@ namespace Siganushka\ApiFactory\Github;
 use Symfony\Component\OptionsResolver\OptionConfigurator;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-final class OptionsUtils
+final class OptionSet
 {
     public static function client_id(OptionsResolver $resolver): OptionConfigurator
     {

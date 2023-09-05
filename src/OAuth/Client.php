@@ -6,7 +6,7 @@ namespace Siganushka\ApiFactory\Github\OAuth;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Siganushka\ApiFactory\Github\ConfigurationExtension;
-use Siganushka\ApiFactory\Github\OptionsUtils;
+use Siganushka\ApiFactory\Github\OptionSet;
 use Siganushka\ApiFactory\ResolverInterface;
 use Siganushka\ApiFactory\ResolverTrait;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -67,8 +67,8 @@ class Client implements ResolverInterface
 
     protected function configureOptions(OptionsResolver $resolver): void
     {
-        OptionsUtils::client_id($resolver);
-        OptionsUtils::client_secret($resolver);
+        OptionSet::client_id($resolver);
+        OptionSet::client_secret($resolver);
 
         $resolver
             ->define('redirect_uri')
