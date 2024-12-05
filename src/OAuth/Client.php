@@ -12,19 +12,19 @@ use Siganushka\ApiFactory\ResolverTrait;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-/**
- * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps
- */
 class Client implements ResolverInterface
 {
     use ResolverTrait;
 
+    /**
+     * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps
+     */
     public const URL = 'https://github.com/login/oauth/authorize';
 
     private ?HttpClientInterface $httpClient = null;
     private ?CacheItemPoolInterface $cachePool = null;
 
-    public function __construct(HttpClientInterface $httpClient = null, CacheItemPoolInterface $cachePool = null)
+    public function __construct(?HttpClientInterface $httpClient = null, ?CacheItemPoolInterface $cachePool = null)
     {
         $this->httpClient = $httpClient;
         $this->cachePool = $cachePool;

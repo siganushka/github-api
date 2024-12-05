@@ -7,9 +7,6 @@ namespace Siganushka\ApiFactory\Github;
 use Siganushka\ApiFactory\AbstractConfiguration;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-/**
- * Github Configuration.
- */
 class Configuration extends AbstractConfiguration
 {
     public static function configureOptions(OptionsResolver $resolver): void

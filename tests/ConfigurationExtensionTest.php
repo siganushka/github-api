@@ -13,16 +13,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ConfigurationExtensionTest extends TestCase
 {
-    protected ?ResolverExtensionInterface $extension = null;
+    protected ResolverExtensionInterface $extension;
 
     protected function setUp(): void
     {
         $this->extension = new ConfigurationExtension(ConfigurationTest::create());
-    }
-
-    protected function tearDown(): void
-    {
-        $this->extension = null;
     }
 
     public function testConfigureOptions(): void

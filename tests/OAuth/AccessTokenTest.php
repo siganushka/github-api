@@ -14,16 +14,11 @@ use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
 class AccessTokenTest extends TestCase
 {
-    protected ?AccessToken $request = null;
+    protected AccessToken $request;
 
     protected function setUp(): void
     {
         $this->request = new AccessToken();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->request = null;
     }
 
     public function testResolve(): void

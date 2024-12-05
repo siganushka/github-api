@@ -9,22 +9,25 @@ use Siganushka\ApiFactory\AbstractRequest;
 use Siganushka\ApiFactory\Exception\ParseResponseException;
 use Siganushka\ApiFactory\Github\OptionSet;
 use Siganushka\ApiFactory\RequestOptions;
-use Siganushka\ApiFactory\Response\CachedResponse;
+use Siganushka\ApiFactory\Response\StaticResponse;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
- * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
+ * @extends AbstractRequest<array>
  */
 class AccessToken extends AbstractRequest
 {
+    /**
+     * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
+     */
     public const URL = 'https://github.com/login/oauth/access_token';
 
     private CacheItemPoolInterface $cachePool;
 
-    public function __construct(HttpClientInterface $httpClient = null, CacheItemPoolInterface $cachePool = null)
+    public function __construct(?HttpClientInterface $httpClient = null, ?CacheItemPoolInterface $cachePool = null)
     {
         $this->cachePool = $cachePool ?? new FilesystemAdapter();
 
@@ -74,7 +77,9 @@ class AccessToken extends AbstractRequest
     {
         $cacheItem = $this->cachePool->getItem((string) $request);
         if ($cacheItem->isHit()) {
-            return CachedResponse::createFromJson($cacheItem->get());
+            if (\is_array($data = $cacheItem->get())) {
+                return StaticResponse::createFromArray($data);
+            }
         }
 
         $response = parent::sendRequest($request);
@@ -97,6 +102,6 @@ class AccessToken extends AbstractRequest
         $error = (string) ($result['error'] ?? '0');
         $errorDescription = (string) ($result['error_description'] ?? 'error');
 
-        throw new ParseResponseException($response, sprintf('%s (%s)', $errorDescription, $error));
+        throw new ParseResponseException($response, \sprintf('%s (%s)', $errorDescription, $error));
     }
 }

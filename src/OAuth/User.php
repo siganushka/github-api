@@ -11,10 +11,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
- * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#3-use-the-access-token-to-access-the-api
+ * @extends AbstractRequest<array>
  */
 class User extends AbstractRequest
 {
+    /**
+     * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#3-use-the-access-token-to-access-the-api
+     */
     public const URL = 'https://api.github.com/user';
 
     protected function configureOptions(OptionsResolver $resolver): void
@@ -29,7 +32,7 @@ class User extends AbstractRequest
     protected function configureRequest(RequestOptions $request, array $options): void
     {
         $headers = [
-            'Authorization' => sprintf('token %s', $options['access_token']),
+            'Authorization' => \sprintf('token %s', $options['access_token']),
         ];
 
         $request
@@ -49,6 +52,6 @@ class User extends AbstractRequest
         $error = (string) ($result['error'] ?? '0');
         $errorDescription = (string) ($result['error_description'] ?? 'error');
 
-        throw new ParseResponseException($response, sprintf('%s (%s)', $errorDescription, $error));
+        throw new ParseResponseException($response, \sprintf('%s (%s)', $errorDescription, $error));
     }
 }

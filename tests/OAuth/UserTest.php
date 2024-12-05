@@ -14,16 +14,11 @@ use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
 class UserTest extends TestCase
 {
-    protected ?User $request = null;
+    protected User $request;
 
     protected function setUp(): void
     {
         $this->request = new User();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->request = null;
     }
 
     public function testResolve(): void
