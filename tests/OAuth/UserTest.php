@@ -44,8 +44,7 @@ class UserTest extends TestCase
     public function testSend(): void
     {
         $data = ['id' => 65535];
-        /** @var string */
-        $body = json_encode($data);
+        $body = json_encode($data, \JSON_THROW_ON_ERROR);
 
         $mockResponse = new MockResponse($body);
         $client = new MockHttpClient($mockResponse);
@@ -61,8 +60,7 @@ class UserTest extends TestCase
         $this->expectExceptionMessage('test error (error)');
 
         $data = ['error' => 'error', 'error_description' => 'test error'];
-        /** @var string */
-        $body = json_encode($data);
+        $body = json_encode($data, \JSON_THROW_ON_ERROR);
 
         $mockResponse = new MockResponse($body);
         $client = new MockHttpClient($mockResponse);
