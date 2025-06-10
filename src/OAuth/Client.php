@@ -16,20 +16,13 @@ class Client implements ResolverInterface
 {
     use ResolverTrait;
 
+    public function __construct(private readonly ?HttpClientInterface $httpClient = null, private readonly ?CacheItemPoolInterface $cachePool = null)
+    {
+    }
+
     /**
      * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps
      */
-    public const URL = 'https://github.com/login/oauth/authorize';
-
-    private ?HttpClientInterface $httpClient = null;
-    private ?CacheItemPoolInterface $cachePool = null;
-
-    public function __construct(?HttpClientInterface $httpClient = null, ?CacheItemPoolInterface $cachePool = null)
-    {
-        $this->httpClient = $httpClient;
-        $this->cachePool = $cachePool;
-    }
-
     public function getRedirectUrl(array $options = []): string
     {
         $resolved = $this->resolve($options);
@@ -44,7 +37,7 @@ class Client implements ResolverInterface
 
         ksort($query);
 
-        return static::URL.'?'.http_build_query($query);
+        return 'https://github.com/login/oauth/authorize?'.http_build_query($query);
     }
 
     public function getAccessToken(array $options = []): array

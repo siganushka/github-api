@@ -15,11 +15,6 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  */
 class User extends AbstractRequest
 {
-    /**
-     * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#3-use-the-access-token-to-access-the-api
-     */
-    public const URL = 'https://api.github.com/user';
-
     protected function configureOptions(OptionsResolver $resolver): void
     {
         $resolver
@@ -29,6 +24,9 @@ class User extends AbstractRequest
         ;
     }
 
+    /**
+     * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#3-use-the-access-token-to-access-the-api
+     */
     protected function configureRequest(RequestOptions $request, array $options): void
     {
         $headers = [
@@ -36,8 +34,7 @@ class User extends AbstractRequest
         ];
 
         $request
-            ->setMethod('GET')
-            ->setUrl(static::URL)
+            ->setUrl('https://api.github.com/user')
             ->setHeaders($headers)
         ;
     }

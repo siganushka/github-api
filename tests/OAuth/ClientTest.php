@@ -58,7 +58,7 @@ class ClientTest extends TestCase
             'client_secret' => 'bar',
         ]);
 
-        static::assertStringStartsWith(Client::URL, $redirectUrl);
+        static::assertStringStartsWith('https://github.com/login/oauth/authorize', $redirectUrl);
         static::assertStringContainsString('client_id=foo', $redirectUrl);
         static::assertStringNotContainsString('redirect_uri=', $redirectUrl);
         static::assertStringNotContainsString('login=', $redirectUrl);
@@ -76,7 +76,7 @@ class ClientTest extends TestCase
             'allow_signup' => 'true',
         ]);
 
-        static::assertStringStartsWith(Client::URL, $redirectUrl);
+        static::assertStringStartsWith('https://github.com/login/oauth/authorize', $redirectUrl);
         static::assertStringContainsString('client_id=foo', $redirectUrl);
         static::assertStringContainsString('redirect_uri=', $redirectUrl);
         static::assertStringContainsString('login=', $redirectUrl);

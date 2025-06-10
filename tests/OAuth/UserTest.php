@@ -33,7 +33,7 @@ class UserTest extends TestCase
         $requestOptions = $this->request->build(['access_token' => 'foo']);
 
         static::assertSame('GET', $requestOptions->getMethod());
-        static::assertSame(User::URL, $requestOptions->getUrl());
+        static::assertSame('https://api.github.com/user', $requestOptions->getUrl());
         static::assertEquals([
             'headers' => [
                 'Authorization' => 'token foo',

@@ -20,12 +20,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  */
 class AccessToken extends AbstractRequest
 {
-    /**
-     * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
-     */
-    public const URL = 'https://github.com/login/oauth/access_token';
-
-    private CacheItemPoolInterface $cachePool;
+    private readonly CacheItemPoolInterface $cachePool;
 
     public function __construct(?HttpClientInterface $httpClient = null, ?CacheItemPoolInterface $cachePool = null)
     {
@@ -52,6 +47,9 @@ class AccessToken extends AbstractRequest
         ;
     }
 
+    /**
+     * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
+     */
     protected function configureRequest(RequestOptions $request, array $options): void
     {
         $headers = [
@@ -66,8 +64,8 @@ class AccessToken extends AbstractRequest
         ], fn ($value) => null !== $value);
 
         $request
+            ->setUrl('https://github.com/login/oauth/access_token')
             ->setMethod('POST')
-            ->setUrl(static::URL)
             ->setHeaders($headers)
             ->setBody($body)
         ;

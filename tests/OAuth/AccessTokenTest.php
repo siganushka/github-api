@@ -49,7 +49,7 @@ class AccessTokenTest extends TestCase
         $requestOptions = $this->request->build(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
 
         static::assertSame('POST', $requestOptions->getMethod());
-        static::assertSame(AccessToken::URL, $requestOptions->getUrl());
+        static::assertSame('https://github.com/login/oauth/access_token', $requestOptions->getUrl());
         static::assertEquals([
             'headers' => [
                 'Accept' => 'application/json',
