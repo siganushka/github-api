@@ -7,6 +7,9 @@ namespace Siganushka\ApiFactory\Github;
 use Siganushka\ApiFactory\AbstractConfiguration;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * @extends AbstractConfiguration<array{ client_id: string, client_secret: string }>
+ */
 class Configuration extends AbstractConfiguration
 {
     public static function configureOptions(OptionsResolver $resolver): void
