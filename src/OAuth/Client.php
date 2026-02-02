@@ -33,7 +33,7 @@ class Client implements ResolverInterface
             'scope' => $resolved['scope'],
             'state' => $resolved['state'],
             'allow_signup' => $resolved['allow_signup'],
-        ], fn ($value) => null !== $value);
+        ], static fn ($value) => null !== $value);
 
         ksort($query);
 

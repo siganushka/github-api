@@ -61,7 +61,7 @@ class AccessToken extends AbstractRequest
             'client_secret' => $options['client_secret'],
             'code' => $options['code'],
             'redirect_uri' => $options['redirect_uri'],
-        ], fn ($value) => null !== $value);
+        ], static fn ($value) => null !== $value);
 
         $request
             ->setUrl('https://github.com/login/oauth/access_token')
