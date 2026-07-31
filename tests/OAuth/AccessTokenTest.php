@@ -7,7 +7,6 @@ namespace Siganushka\ApiFactory\Github\Tests\OAuth;
 use PHPUnit\Framework\TestCase;
 use Siganushka\ApiFactory\Exception\ParseResponseException;
 use Siganushka\ApiFactory\Github\OAuth\AccessToken;
-use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
@@ -34,6 +33,7 @@ class AccessTokenTest extends TestCase
             'client_id' => 'foo',
             'client_secret' => 'bar',
             'code' => 'baz',
+            'code_verifier' => null,
         ], $this->request->resolve($options));
 
         static::assertEquals([
@@ -41,7 +41,8 @@ class AccessTokenTest extends TestCase
             'client_id' => 'foo',
             'client_secret' => 'bar',
             'code' => 'baz',
-        ], $this->request->resolve($options + ['redirect_uri' => '/foo']));
+            'code_verifier' => 'test_code_verifier',
+        ], $this->request->resolve($options + ['redirect_uri' => '/foo', 'code_verifier' => 'test_code_verifier']));
     }
 
     public function testBuild(): void
@@ -61,7 +62,7 @@ class AccessTokenTest extends TestCase
             ],
         ], $requestOptions->toArray());
 
-        $requestOptions = $this->request->build(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz', 'redirect_uri' => '/foo']);
+        $requestOptions = $this->request->build(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz', 'redirect_uri' => '/foo', 'code_verifier' => 'test_code_verifier']);
         static::assertEquals([
             'headers' => [
                 'Accept' => 'application/json',
@@ -71,6 +72,7 @@ class AccessTokenTest extends TestCase
                 'client_secret' => 'bar',
                 'code' => 'baz',
                 'redirect_uri' => '/foo',
+                'code_verifier' => 'test_code_verifier',
             ],
         ], $requestOptions->toArray());
     }
@@ -99,9 +101,7 @@ class AccessTokenTest extends TestCase
         $mockResponse = new MockResponse($body);
         $client = new MockHttpClient($mockResponse);
 
-        $cachePool = new NullAdapter();
-
-        (new AccessToken($client, $cachePool))->send(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
+        (new AccessToken($client))->send(['client_id' => 'foo', 'client_secret' => 'bar', 'code' => 'baz']);
     }
 
     public function testClientIdMissingOptionsException(): void

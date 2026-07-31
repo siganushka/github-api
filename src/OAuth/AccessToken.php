@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiFactory\Github\OAuth;
 
-use Psr\Cache\CacheItemPoolInterface;
 use Siganushka\ApiFactory\AbstractRequest;
 use Siganushka\ApiFactory\Exception\ParseResponseException;
 use Siganushka\ApiFactory\Github\OptionSet;
 use Siganushka\ApiFactory\RequestOptions;
 use Siganushka\ApiFactory\Response\StaticResponse;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -20,11 +21,11 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  */
 class AccessToken extends AbstractRequest
 {
-    private readonly CacheItemPoolInterface $cachePool;
+    private readonly CacheInterface $cache;
 
-    public function __construct(?HttpClientInterface $httpClient = null, ?CacheItemPoolInterface $cachePool = null)
+    public function __construct(?HttpClientInterface $httpClient = null, ?CacheInterface $cache = null)
     {
-        $this->cachePool = $cachePool ?? new FilesystemAdapter();
+        $this->cache = $cache ?? new NullAdapter();
 
         parent::__construct($httpClient);
     }
@@ -45,10 +46,16 @@ class AccessToken extends AbstractRequest
             ->default(null)
             ->allowedTypes('null', 'string')
         ;
+
+        $resolver
+            ->define('code_verifier')
+            ->default(null)
+            ->allowedTypes('null', 'string')
+        ;
     }
 
     /**
-     * @see https://docs.github.com/cn/developers/apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
+     * @see https://docs.github.com/zh/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
      */
     protected function configureRequest(RequestOptions $request, array $options): void
     {
@@ -61,6 +68,7 @@ class AccessToken extends AbstractRequest
             'client_secret' => $options['client_secret'],
             'code' => $options['code'],
             'redirect_uri' => $options['redirect_uri'],
+            'code_verifier' => $options['code_verifier'],
         ], static fn ($value) => null !== $value);
 
         $request
@@ -73,21 +81,16 @@ class AccessToken extends AbstractRequest
 
     protected function sendRequest(RequestOptions $request): ResponseInterface
     {
-        $cacheItem = $this->cachePool->getItem((string) $request);
-        if ($cacheItem->isHit()) {
-            if (\is_array($data = $cacheItem->get())) {
-                return StaticResponse::createFromArray($data);
-            }
-        }
+        $callback = function (ItemInterface $item) use ($request): ResponseInterface {
+            $item->expiresAfter(600);
 
-        $response = parent::sendRequest($request);
-        $parsedResponse = $this->parseResponse($response);
+            $response = parent::sendRequest($request);
+            $parsedResponse = $this->parseResponse($response);
 
-        $cacheItem->set($parsedResponse);
-        $cacheItem->expiresAfter(600);
-        $this->cachePool->save($cacheItem);
+            return StaticResponse::createFromArray($parsedResponse);
+        };
 
-        return $response;
+        return $this->cache->get($request->__toString(), $callback);
     }
 
     protected function parseResponse(ResponseInterface $response): array

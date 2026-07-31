@@ -26,7 +26,10 @@ class ClientTest extends TestCase
             'login' => null,
             'scope' => null,
             'state' => null,
+            'code_challenge' => null,
+            'code_challenge_method' => null,
             'allow_signup' => null,
+            'prompt' => null,
         ], $this->client->resolve([
             'client_id' => 'foo',
             'client_secret' => 'bar',
@@ -39,7 +42,10 @@ class ClientTest extends TestCase
             'login' => 'test_login',
             'scope' => 'test_scope',
             'state' => 'test_state',
+            'code_challenge' => 'test_code_challenge',
+            'code_challenge_method' => 'test_code_challenge_method',
             'allow_signup' => 'true',
+            'prompt' => 'test_prompt',
         ], $this->client->resolve([
             'client_id' => 'foo',
             'client_secret' => 'bar',
@@ -47,7 +53,10 @@ class ClientTest extends TestCase
             'login' => 'test_login',
             'scope' => 'test_scope',
             'state' => 'test_state',
+            'code_challenge' => 'test_code_challenge',
+            'code_challenge_method' => 'test_code_challenge_method',
             'allow_signup' => 'true',
+            'prompt' => 'test_prompt',
         ]));
     }
 
@@ -64,7 +73,10 @@ class ClientTest extends TestCase
         static::assertStringNotContainsString('login=', $redirectUrl);
         static::assertStringNotContainsString('scope=', $redirectUrl);
         static::assertStringNotContainsString('state=', $redirectUrl);
+        static::assertStringNotContainsString('code_challenge=', $redirectUrl);
+        static::assertStringNotContainsString('code_challenge_method=', $redirectUrl);
         static::assertStringNotContainsString('allow_signup=', $redirectUrl);
+        static::assertStringNotContainsString('prompt=', $redirectUrl);
 
         $redirectUrl = $this->client->getRedirectUrl([
             'client_id' => 'foo',
@@ -73,7 +85,10 @@ class ClientTest extends TestCase
             'login' => 'test_login',
             'scope' => 'test_scope',
             'state' => 'test_state',
+            'code_challenge' => 'test_code_challenge',
+            'code_challenge_method' => 'test_code_challenge_method',
             'allow_signup' => 'true',
+            'prompt' => 'test_prompt',
         ]);
 
         static::assertStringStartsWith('https://github.com/login/oauth/authorize', $redirectUrl);
@@ -82,7 +97,10 @@ class ClientTest extends TestCase
         static::assertStringContainsString('login=', $redirectUrl);
         static::assertStringContainsString('scope=', $redirectUrl);
         static::assertStringContainsString('state=', $redirectUrl);
+        static::assertStringContainsString('code_challenge=', $redirectUrl);
+        static::assertStringContainsString('code_challenge_method=', $redirectUrl);
         static::assertStringContainsString('allow_signup=', $redirectUrl);
+        static::assertStringContainsString('prompt=', $redirectUrl);
     }
 
     public function testClientIdMissingOptionsException(): void

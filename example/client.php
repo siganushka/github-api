@@ -15,8 +15,16 @@ if (!isset($_GET['code'])) {
         ($_SERVER['HTTP_HOST'] ?? 'localhost').
         ($_SERVER['REQUEST_URI'] ?? '');
 
+    // @see https://docs.github.com/zh/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#1-request-a-users-github-identity
     $options = [
         'redirect_uri' => $currentUrl,
+        // 'login' => 'xxx',
+        // 'scope' => 'xxx',
+        // 'state' => 'xxx',
+        // 'code_challenge' => 'xxx',
+        // 'code_challenge_method' => 'xxx',
+        // 'allow_signup' => 'true',
+        // 'prompt' => 'xxx',
     ];
 
     $redirectUrl = $client->getRedirectUrl($options);

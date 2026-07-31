@@ -36,7 +36,7 @@ class UserTest extends TestCase
         static::assertSame('https://api.github.com/user', $requestOptions->getUrl());
         static::assertEquals([
             'headers' => [
-                'Authorization' => 'token foo',
+                'Authorization' => 'Bearer foo',
             ],
         ], $requestOptions->toArray());
     }
